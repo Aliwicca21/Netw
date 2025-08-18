@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>الملف الشخصي</title>
+<link rel="stylesheet" href="profile.css">
+
+<!-- PayPal JS SDK (أزرار قياسية) -->
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2>البيانات</h2>
+      <div class="row"><span>الاسم:</span><strong id="user-name">—</strong></div>
+      <div class="row"><span>البريد:</span><strong id="user-email">—</strong></div>
+      <div class="row"><span>الهاتف:</span><strong id="user-phone">—</strong></div>
+      <div class="row"><span>تاريخ الميلاد:</span><strong id="user-birth">—</strong></div>
+      <div class="row"><span>الرصيد:</span><strong id="user-balance">0</strong> <span>$</span></div>
+      <div class="actions">
+        <button id="logout-btn" class="outline">تسجيل الخروج</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>شحن الرصيد (PayPal)</h2>
+      <p class="muted">اختر قيمة الشحن:</p>
+      <div class="grid">
+        <div>
+          <div id="paypal-topup-5"></div>
+          <small>شحن 5$</small>
+        </div>
+        <div>
+          <div id="paypal-topup-10"></div>
+          <small>شحن 10$</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>الاشتراك</h2>
+      <div class="row"><span>الحالة:</span><strong id="sub-status">غير مفعل</strong></div>
+      <div class="row"><span>الخطة:</span><strong id="sub-plan">—</strong></div>
+      <div class="row"><span>ينتهي في:</span><strong id="sub-expires">—</strong></div>
+
+      <p class="muted">اختر خطة الاشتراك:</p>
+      <div class="grid">
+        <div>
+          <div id="paypal-sub-monthly"></div>
+          <small>شهري 4.99$</small>
+        </div>
+        <div>
+          <div id="paypal-sub-yearly"></div>
+          <small>سنوي 49.99$</small>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="cancel-sub" class="outline">إلغاء تفعيل الاشتراك</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="profile.js"></script>
+</body>
+</html>
