@@ -1,40 +1,31 @@
-// register.js
-import { auth, db } from './firebase-config.js';
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "./firebase-config.js";
+import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-document.getElementById("register-btn").addEventListener("click", async () => {
-  const name = document.getElementById("register-name").value.trim();
-  const email = document.getElementById("register-email").value.trim();
-  const password = document.getElementById("register-password").value;
-  const phone = document.getElementById("register-phone").value.trim();
-  const birth  = document.getElementById("register-birth").value;
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  if(!name || !email || !password || !phone || !birth){
-    return alert("من فضلك أكمل جميع الحقول.");
-  }
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const phone = document.getElementById("phone").value;
+  const birthdate = document.getElementById("birthdate").value;
 
   try {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(cred.user, { displayName: name });
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-    await setDoc(doc(db, "users", cred.user.uid), {
-      name, email, phone, birth,
+    // حفظ بيانات إضافية في Firestore
+    await setDoc(doc(db, "users", user.uid), {
+      email,
+      phone,
+      birthdate,
       balance: 0,
-      subscription: {
-        active: false,
-        plan: null,
-        startedAt: null,
-        expiresAt: null,
-        lastPaymentId: null,
-        renewed: false
-      },
-      createdAt: serverTimestamp()
+      subscription: null
     });
 
-    alert("تم إنشاء الحساب بنجاح!");
+    alert("تم إنشاء الحساب بنجاح ✅");
     window.location.href = "login.html";
-  } catch (e) {
-    alert(e.message);
+  } catch (error) {
+    alert("خطأ: " + error.message);
   }
 });
