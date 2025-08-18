@@ -1,22 +1,60 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>إنشاء حساب</title>
-<link rel="stylesheet" href="auth.css">
+  <meta charset="UTF-8">
+  <title>إنشاء حساب</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+      authDomain: "fir-dba4c.firebaseapp.com",
+      projectId: "fir-dba4c",
+      storageBucket: "fir-dba4c.firebasestorage.app",
+      messagingSenderId: "160255207915",
+      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
+      measurementId: "G-GYPNMR85G2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.registerUser = async function() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const phone = document.getElementById("phone").value;
+      const birthdate = document.getElementById("birthdate").value;
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        await setDoc(doc(db, "users", user.uid), {
+          email,
+          phone,
+          birthdate,
+          balance: 0,
+          subscription: null
+        });
+
+        alert("تم إنشاء الحساب بنجاح ✅");
+        window.location.href = "login.html";
+      } catch (error) {
+        alert("خطأ: " + error.message);
+      }
+    }
+  </script>
 </head>
 <body>
-  <div class="card">
-    <h2>إنشاء حساب</h2>
-    <input type="text" id="register-name" placeholder="الاسم الكامل">
-    <input type="email" id="register-email" placeholder="البريد الإلكتروني">
-    <input type="password" id="register-password" placeholder="كلمة المرور">
-    <input type="tel" id="register-phone" placeholder="رقم الهاتف">
-    <input type="date" id="register-birth" placeholder="تاريخ الميلاد">
-    <button id="register-btn">إنشاء حساب</button>
-    <p>لديك حساب؟ <a href="index.html">تسجيل الدخول</a></p>
-  </div>
-  <script type="module" src="register.js"></script>
+  <h2>إنشاء حساب جديد</h2>
+  <input type="email" id="email" placeholder="الإيميل"><br>
+  <input type="password" id="password" placeholder="كلمة المرور"><br>
+  <input type="text" id="phone" placeholder="رقم الهاتف"><br>
+  <input type="date" id="birthdate"><br>
+  <button onclick="registerUser()">إنشاء حساب</button>
+  <p>عندك حساب؟ <a href="login.html">سجّل دخول</a></p>
 </body>
 </html>
