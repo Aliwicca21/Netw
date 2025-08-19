@@ -6,12 +6,15 @@
   <style>
     body { font-family: Arial; background: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; }
     .card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    input { padding: 10px; font-size: 16px; width: 80%; margin-bottom: 10px; }
+    input { padding: 10px; font-size: 16px; width: 80%; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; }
+    button { padding: 10px 20px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; background-color: #0070ba; color: white; margin-top: 10px; }
+    #balance { font-weight: bold; color: #0070ba; }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>شحن الرصيد</h2>
+    <p>رصيدك الحالي: <span id="balance">جار التحميل...</span></p>
     <p>ادخل المبلغ الذي تريد شحنه بالدولار:</p>
     <input type="number" id="amount" placeholder="مثال: 5" min="1" step="0.01">
     <div id="paypal-button-container"></div>
@@ -38,10 +41,22 @@
     const db = getFirestore(app);
     let currentUser = null;
 
-    onAuthStateChanged(auth, user => {
-      if(user) currentUser = user;
-      else window.location.href = "login.html";
+    onAuthStateChanged(auth, async (user) => {
+      if(user) {
+        currentUser = user;
+        await loadBalance();
+      } else {
+        window.location.href = "login.html";
+      }
     });
+
+    async function loadBalance(){
+      if(!currentUser) return;
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      const balance = docSnap.data().balance || 0;
+      document.getElementById("balance").textContent = balance.toFixed(2) + " $";
+    }
 
     async function addBalance(amount){
       if(!currentUser) return;
@@ -50,6 +65,7 @@
       const oldBalance = docSnap.data().balance || 0;
       const newBalance = oldBalance + parseFloat(amount);
       await updateDoc(docRef, { balance: newBalance });
+      document.getElementById("balance").textContent = newBalance.toFixed(2) + " $";
       alert("تم إضافة " + amount + "$ إلى رصيدك ✅");
     }
 
