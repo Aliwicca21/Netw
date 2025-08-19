@@ -1,66 +1,93 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>الملف الشخصي</title>
-<link rel="stylesheet" href="profile.css">
+  <meta charset="UTF-8">
+  <title>الملف الشخصي</title>
+  <link rel="stylesheet" href="auth.css">
+  <script src="https://www.paypal.com/sdk/js?client-id=BAAOBERDydOSuUVzDC-pOzaroIvnZwPLoJ7CpH16gd14qDn-Iv7GV_qtqu_4US4diU3wfrY83ErgCtKXLs&components=buttons&disable-funding=venmo&currency=USD"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-<!-- PayPal JS SDK (أزرار قياسية) -->
-<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+      authDomain: "fir-dba4c.firebaseapp.com",
+      projectId: "fir-dba4c",
+      storageBucket: "fir-dba4c.firebasestorage.app",
+      messagingSenderId: "160255207915",
+      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
+      measurementId: "G-GYPNMR85G2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById("email").textContent = data.email;
+          document.getElementById("phone").textContent = data.phone;
+          document.getElementById("birthdate").textContent = data.birthdate;
+          document.getElementById("balance").textContent = data.balance + " $";
+          document.getElementById("subscription").textContent = data.subscription || "لا يوجد اشتراك";
+        }
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    window.logout = async function() {
+      await signOut(auth);
+      window.location.href = "login.html";
+    }
+
+    paypal.Buttons({
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: { value: '5' }
+          }]
+        });
+      },
+      onApprove: async function(data, actions) {
+        await actions.order.capture();
+        if (currentUser) {
+          const docRef = doc(db, "users", currentUser.uid);
+          const docSnap = await getDoc(docRef);
+          const oldBalance = docSnap.data().balance || 0;
+          const newBalance = oldBalance + 5;
+
+          await updateDoc(docRef, { balance: newBalance });
+          document.getElementById("balance").textContent = newBalance + " $";
+          alert("تم شحن 5$ بنجاح ✅");
+        }
+      }
+    }).render('#paypal-button-container');
+  </script>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h2>البيانات</h2>
-      <div class="row"><span>الاسم:</span><strong id="user-name">—</strong></div>
-      <div class="row"><span>البريد:</span><strong id="user-email">—</strong></div>
-      <div class="row"><span>الهاتف:</span><strong id="user-phone">—</strong></div>
-      <div class="row"><span>تاريخ الميلاد:</span><strong id="user-birth">—</strong></div>
-      <div class="row"><span>الرصيد:</span><strong id="user-balance">0</strong> <span>$</span></div>
-      <div class="actions">
-        <button id="logout-btn" class="outline">تسجيل الخروج</button>
-      </div>
-    </div>
+  <div class="card">
+    <h2>الملف الشخصي</h2>
+    <p><strong>الإيميل:</strong> <span id="email">جار التحميل...</span></p>
+    <p><strong>رقم الهاتف:</strong> <span id="phone">جار التحميل...</span></p>
+    <p><strong>تاريخ الميلاد:</strong> <span id="birthdate">جار التحميل...</span></p>
+    <p><strong>الرصيد:</strong> <span id="balance">جار التحميل...</span></p>
+    <p><strong>الاشتراك:</strong> <span id="subscription">جار التحميل...</span></p>
 
-    <div class="card">
-      <h2>شحن الرصيد (PayPal)</h2>
-      <p class="muted">اختر قيمة الشحن:</p>
-      <div class="grid">
-        <div>
-          <div id="paypal-topup-5"></div>
-          <small>شحن 5$</small>
-        </div>
-        <div>
-          <div id="paypal-topup-10"></div>
-          <small>شحن 10$</small>
-        </div>
-      </div>
-    </div>
+    <h3>شحن الرصيد</h3>
+    <div id="paypal-button-container"></div>
 
-    <div class="card">
-      <h2>الاشتراك</h2>
-      <div class="row"><span>الحالة:</span><strong id="sub-status">غير مفعل</strong></div>
-      <div class="row"><span>الخطة:</span><strong id="sub-plan">—</strong></div>
-      <div class="row"><span>ينتهي في:</span><strong id="sub-expires">—</strong></div>
-
-      <p class="muted">اختر خطة الاشتراك:</p>
-      <div class="grid">
-        <div>
-          <div id="paypal-sub-monthly"></div>
-          <small>شهري 4.99$</small>
-        </div>
-        <div>
-          <div id="paypal-sub-yearly"></div>
-          <small>سنوي 49.99$</small>
-        </div>
-      </div>
-      <div class="actions">
-        <button id="cancel-sub" class="outline">إلغاء تفعيل الاشتراك</button>
-      </div>
-    </div>
+    <h3>الحساب</h3>
+    <button onclick="logout()">تسجيل الخروج</button>
   </div>
-
-  <script type="module" src="profile.js"></script>
 </body>
 </html>
