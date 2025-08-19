@@ -25,7 +25,16 @@
     const db = getFirestore(app);
     let currentUser = null;
 
-    const SUBSCRIPTION_COST = 2.5; // تكلفة الاشتراك الشهري
+    const SUBSCRIPTION_COSTS = {
+      "month": 2.5,
+      "3months": 7.5,
+      "year": 30
+    };
+    const SUBSCRIPTION_MONTHS = {
+      "month": 1,
+      "3months": 3,
+      "year": 12
+    };
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -68,25 +77,23 @@
       alert("تم إضافة " + amount + "$ إلى رصيدك ✅");
     }
 
-    // تجديد الاشتراك من الرصيد
-    window.renewSubscription = async function() {
+    window.renewSubscription = async function(type) {
       if (!currentUser) return;
       const docRef = doc(db, "users", currentUser.uid);
       const docSnap = await getDoc(docRef);
       const data = docSnap.data();
       const balance = data.balance || 0;
+      const cost = SUBSCRIPTION_COSTS[type];
+      const monthsToAdd = SUBSCRIPTION_MONTHS[type];
 
-      if(balance < SUBSCRIPTION_COST) {
+      if(balance < cost) {
         alert("رصيدك غير كافي لتجديد الاشتراك 😢");
         return;
       }
 
-      // خصم الرصيد
-      const newBalance = balance - SUBSCRIPTION_COST;
-
-      // تحديد موعد انتهاء الاشتراك الجديد
+      const newBalance = balance - cost;
       const currentSub = data.subscription ? new Date(data.subscription) : new Date();
-      const newSubDate = new Date(currentSub.setMonth(currentSub.getMonth() + 1)).toISOString().split('T')[0];
+      const newSubDate = new Date(currentSub.setMonth(currentSub.getMonth() + monthsToAdd)).toISOString().split('T')[0];
 
       await updateDoc(docRef, { 
         balance: newBalance, 
@@ -97,8 +104,18 @@
       document.getElementById("subscription").textContent = newSubDate;
       document.getElementById("subscription-end").textContent = newSubDate;
 
-      alert("تم تجديد الاشتراك لشهر جديد ✅");
+      alert(`تم تجديد الاشتراك لمدة ${monthsToAdd} شهر ✅`);
     }
+
+    // زر أيقونة PayPal للشحن
+    window.addEventListener("DOMContentLoaded", function(){
+      paypal.HostedButtons({
+        hostedButtonId: "S5TM2YB5YRGRW",
+        onApprove: function(data, actions) {
+          window.addBalanceAfterPayment(5);
+        }
+      }).render("#paypal-container-S5TM2YB5YRGRW");
+    });
   </script>
 </head>
 <body>
@@ -108,6 +125,37 @@
     <p><strong>رقم الهاتف:</strong> <span id="phone">جار التحميل...</span></p>
     <p><strong>تاريخ الميلاد:</strong> <span id="birthdate">جار التحميل...</span></p>
     <p><strong>الرصيد:</strong> <span id="balance">جار التحميل...</span></p>
+    <p><strong>الاشتراك:</strong> <span id="subscription">جار التحميل...</span></p>
+    <p><strong>موعد انتهاء الاشتراك:</strong> <span id="subscription-end">جار التحميل...</span></p>
+
+    <h3>شحن الرصيد</h3>
+    <!-- أيقونة PayPal -->
+    <button id="paypal-icon-btn" style="background:none;border:none;cursor:pointer;">
+      <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" alt="PayPal" width="80">
+    </button>
+    <div id="paypal-container-S5TM2YB5YRGRW" style="display:none;"></div>
+
+    <h3>اشتراك</h3>
+    <button onclick="renewSubscription('month')">تجديد شهر (2.50$)</button>
+    <button onclick="renewSubscription('3months')">تجديد 3 أشهر (7.50$)</button>
+    <button onclick="renewSubscription('year')">تجديد سنة (30$)</button>
+
+    <h3>الحساب</h3>
+    <button onclick="logout()">تسجيل الخروج</button>
+  </div>
+
+  <script>
+    // عند الضغط على أيقونة PayPal، نضغط زر PayPal المخفي
+    document.getElementById("paypal-icon-btn").addEventListener("click", function() {
+      const iframe = document.querySelector("#paypal-container-S5TM2YB5YRGRW iframe");
+      if(iframe) {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.document.querySelector('button').click();
+      }
+    });
+  </script>
+</body>
+</html>    <p><strong>الرصيد:</strong> <span id="balance">جار التحميل...</span></p>
     <p><strong>الاشتراك:</strong> <span id="subscription">جار التحميل...</span></p>
     <p><strong>موعد انتهاء الاشتراك:</strong> <span id="subscription-end">جار التحميل...</span></p>
 
