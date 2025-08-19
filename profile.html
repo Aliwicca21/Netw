@@ -38,6 +38,13 @@
           document.getElementById("birthdate").textContent = data.birthdate;
           document.getElementById("balance").textContent = data.balance + " $";
           document.getElementById("subscription").textContent = data.subscription || "لا يوجد اشتراك";
+          
+          // عرض موعد انتهاء الاشتراك
+          if(data.subscription) {
+            document.getElementById("subscription-end").textContent = data.subscription;
+          } else {
+            document.getElementById("subscription-end").textContent = "لا يوجد اشتراك";
+          }
         }
       } else {
         window.location.href = "login.html";
@@ -49,7 +56,6 @@
       window.location.href = "login.html";
     }
 
-    // مثال تحديث الرصيد بعد الدفع (يمكن تفعيله حسب webhook أو طريقة تأكيد الدفع)
     window.addBalanceAfterPayment = async function(amount) {
       if (!currentUser) return;
       const docRef = doc(db, "users", currentUser.uid);
@@ -58,7 +64,21 @@
       const newBalance = oldBalance + amount;
       await updateDoc(docRef, { balance: newBalance });
       document.getElementById("balance").textContent = newBalance + " $";
-      alert("تم شحن الرصيد بنجاح ✅");
+      alert("تم إضافة " + amount + "$ إلى رصيدك ✅");
+    }
+
+    window.renewSubscription = async function() {
+      if (!currentUser) return;
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(docRef);
+
+      const currentSub = docSnap.data().subscription ? new Date(docSnap.data().subscription) : new Date();
+      const newSubDate = new Date(currentSub.setMonth(currentSub.getMonth() + 1)).toISOString().split('T')[0];
+
+      await updateDoc(docRef, { subscription: newSubDate });
+      document.getElementById("subscription").textContent = newSubDate;
+      document.getElementById("subscription-end").textContent = newSubDate;
+      alert("تم تجديد الاشتراك لشهر جديد ✅");
     }
   </script>
 </head>
@@ -70,19 +90,21 @@
     <p><strong>تاريخ الميلاد:</strong> <span id="birthdate">جار التحميل...</span></p>
     <p><strong>الرصيد:</strong> <span id="balance">جار التحميل...</span></p>
     <p><strong>الاشتراك:</strong> <span id="subscription">جار التحميل...</span></p>
+    <p><strong>موعد انتهاء الاشتراك:</strong> <span id="subscription-end">جار التحميل...</span></p>
 
-    <h3>شحن الرصيد أو تجديد الاشتراك</h3>
+    <h3>شحن الرصيد (PayPal)</h3>
     <div id="paypal-container-S5TM2YB5YRGRW"></div>
     <script>
       paypal.HostedButtons({
         hostedButtonId: "S5TM2YB5YRGRW",
-        // يمكن إضافة callback بعد الدفع لتحديث الرصيد أو الاشتراك
         onApprove: function(data, actions) {
-          // مثال: زيادة 5$ بعد الدفع
           window.addBalanceAfterPayment(5);
         }
       }).render("#paypal-container-S5TM2YB5YRGRW");
     </script>
+
+    <h3>اشتراك</h3>
+    <button onclick="renewSubscription()">تجديد الاشتراك لشهر</button>
 
     <h3>الحساب</h3>
     <button onclick="logout()">تسجيل الخروج</button>
