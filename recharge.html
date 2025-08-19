@@ -19,9 +19,6 @@
   <h3>شحن رصيدك</h3>
   <input type="number" id="amount" placeholder="أدخل المبلغ" min="1" step="0.01">
   <div id="paypal-charge-container"></div>
-
-  <h3>الاشتراك الشهري</h3>
-  <div id="paypal-subscription-container"></div>
 </div>
 
 <!-- PayPal SDK -->
@@ -91,21 +88,6 @@
     },
     onError: function(err) { console.error(err); alert("حدث خطأ أثناء الدفع."); }
   }).render('#paypal-charge-container');
-
-  // زر الاشتراك الشهري
-  paypal.Buttons({
-    style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
-    createSubscription: function(data, actions) {
-      return actions.subscription.create({
-        plan_id: 'P-6GV504725H685590YNCSFSGY' // ضع هنا Plan ID الخاص بك
-      });
-    },
-    onApprove: function(data, actions) {
-      alert("تم الاشتراك بنجاح! رقم الاشتراك: " + data.subscriptionID);
-      // هنا يمكن تحديث الاشتراك في Firebase إذا أحببت
-    },
-    onError: function(err) { console.error(err); alert("حدث خطأ أثناء الاشتراك."); }
-  }).render('#paypal-subscription-container');
 
 </script>
 </body>
