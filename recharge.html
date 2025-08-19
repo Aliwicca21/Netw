@@ -2,81 +2,50 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>شحن الرصيد</title>
-  <link rel="stylesheet" href="auth.css">
-  <script src="https://www.paypal.com/sdk/js?client-id=BAAOBERDydOSuUVzDC-pOzaroIvnZwPLoJ7CpH16gd14qDn-Iv7GV_qtqu_4US4diU3wfrY83ErgCtKXLs&currency=USD"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
-      authDomain: "fir-dba4c.firebaseapp.com",
-      projectId: "fir-dba4c",
-      storageBucket: "fir-dba4c.firebasestorage.app",
-      messagingSenderId: "160255207915",
-      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
-      measurementId: "G-GYPNMR85G2"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    let currentUser = null;
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-      } else {
-        window.location.href = "login.html";
-      }
-    });
-
-    // إضافة رصيد بعد الدفع
-    window.addBalanceAfterPayment = async function(amount) {
-      if (!currentUser) return;
-      const docRef = doc(db, "users", currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      const oldBalance = docSnap.data().balance || 0;
-      const newBalance = oldBalance + amount;
-      await updateDoc(docRef, { balance: newBalance });
-      alert("تم إضافة " + amount + "$ إلى رصيدك ✅");
-    }
-
-    // تشغيل زر الدفع
-    window.addEventListener("DOMContentLoaded", function(){
-      paypal.Buttons({
-        createOrder: function(data, actions) {
-          const amount = document.getElementById("amount").value || "1.00"; // لو العميل ما كتبش، افتراضي 1$
-          return actions.order.create({
-            purchase_units: [{
-              amount: { value: amount }
-            }]
-          });
-        },
-        onApprove: function(data, actions) {
-          return actions.order.capture().then(function(details) {
-            const amount = parseFloat(document.getElementById("amount").value || "1.00");
-            alert('تم الدفع بواسطة ' + details.payer.name.given_name);
-            window.addBalanceAfterPayment(amount);
-          });
-        }
-      }).render('#paypal-button-container');
-    });
-  </script>
+  <title>صفحة الاشتراك</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    .card { display: inline-block; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+    h2 { color: #333; }
+  </style>
 </head>
 <body>
+
   <div class="card">
-    <h2>شحن الرصيد</h2>
+    <h2>اشتراك PayPal</h2>
+    <p>اضغط على الزر للاشتراك في الخدمة.</p>
 
-    <label>ادخل المبلغ ($):</label>
-    <input type="number" id="amount" placeholder="اكتب المبلغ" min="1" step="0.01">
-
-    <div id="paypal-button-container" style="margin-top: 15px;"></div>
-
-    <h3>الحساب</h3>
-    <button onclick="window.location.href='profile.html'">🔙 رجوع للملف الشخصي</button>
+    <!-- مكان زر الاشتراك -->
+    <div id="paypal-button-container-P-9T757258JL3589058NCSENQQ"></div>
   </div>
+
+  <!-- تحميل مكتبة PayPal SDK -->
+  <script src="https://www.paypal.com/sdk/js?client-id=AZ44qaQI2dxTksnrqKU4gT1rL1HXZbWFmk2fqM5thehRfuWiL4DQI0ZP7dIISJwAoiO4qrP9D4Iw1a_i&vault=true&intent=subscription"></script>
+
+  <script>
+    paypal.Buttons({
+        style: {
+            shape: 'rect',
+            color: 'gold',
+            layout: 'vertical',
+            label: 'subscribe'
+        },
+        createSubscription: function(data, actions) {
+            return actions.subscription.create({
+                plan_id: 'P-9T757258JL3589058NCSENQQ', // ضع هنا Plan ID الخاص بك
+                quantity: 1
+            });
+        },
+        onApprove: function(data, actions) {
+            alert("تم الاشتراك بنجاح! رقم الاشتراك: " + data.subscriptionID);
+            // هنا يمكنك إضافة كود لتسجيل الاشتراك في Firebase أو تحديث الرصيد
+        },
+        onError: function(err) {
+            console.error(err);
+            alert("حدث خطأ أثناء معالجة الاشتراك.");
+        }
+    }).render('#paypal-button-container-P-9T757258JL3589058NCSENQQ');
+  </script>
+
 </body>
 </html>
