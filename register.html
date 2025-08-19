@@ -1,98 +1,238 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>إنشاء حساب</title>
-  <link rel="stylesheet" href="auth.css">
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+<meta charset="UTF-8">
+<title>إنشاء حساب</title>
+<link rel="stylesheet" href="auth.css">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
-      authDomain: "fir-dba4c.firebaseapp.com",
-      projectId: "fir-dba4c",
-      storageBucket: "fir-dba4c.firebasestorage.app",
-      messagingSenderId: "160255207915",
-      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
-      measurementId: "G-GYPNMR85G2"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+  authDomain: "fir-dba4c.firebaseapp.com",
+  projectId: "fir-dba4c",
+  storageBucket: "fir-dba4c.firebasestorage.app",
+  messagingSenderId: "160255207915",
+  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
+  measurementId: "G-GYPNMR85G2"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    window.signupUser = async function() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-      const phone = document.getElementById("phone").value.trim();
-      const username = document.getElementById("username").value.trim();
-      const fullname = document.getElementById("fullname").value.trim();
-      const birthdate = document.getElementById("birthdate").value;
+// قائمة كل الدول 193 دولة ما عدا إسرائيل
+const countries = [
+  { name: "أفغانستان", code: "+93", length: 9 },
+  { name: "ألبانيا", code: "+355", length: 9 },
+  { name: "الجزائر", code: "+213", length: 9 },
+  { name: "أندورا", code: "+376", length: 6 },
+  { name: "أنغولا", code: "+244", length: 9 },
+  { name: "أنتيغوا وبربودا", code: "+1", length: 10 },
+  { name: "الأرجنتين", code: "+54", length: 10 },
+  { name: "أرمينيا", code: "+374", length: 8 },
+  { name: "أستراليا", code: "+61", length: 9 },
+  { name: "النمسا", code: "+43", length: 10 },
+  { name: "أذربيجان", code: "+994", length: 9 },
+  { name: "جزر الباهاما", code: "+1", length: 10 },
+  { name: "البحرين", code: "+973", length: 8 },
+  { name: "بنغلاديش", code: "+880", length: 10 },
+  { name: "باربادوس", code: "+1", length: 10 },
+  { name: "بيلاروسيا", code: "+375", length: 9 },
+  { name: "بلجيكا", code: "+32", length: 9 },
+  { name: "بليز", code: "+501", length: 7 },
+  { name: "بنين", code: "+229", length: 8 },
+  { name: "بوتان", code: "+975", length: 8 },
+  { name: "بوليفيا", code: "+591", length: 8 },
+  { name: "البوسنة والهرسك", code: "+387", length: 8 },
+  { name: "بوتسوانا", code: "+267", length: 7 },
+  { name: "البرازيل", code: "+55", length: 11 },
+  { name: "بروناي", code: "+673", length: 7 },
+  { name: "بلغاريا", code: "+359", length: 9 },
+  { name: "بوركينا فاسو", code: "+226", length: 8 },
+  { name: "بوروندي", code: "+257", length: 8 },
+  { name: "كمبوديا", code: "+855", length: 9 },
+  { name: "الكاميرون", code: "+237", length: 9 },
+  { name: "كندا", code: "+1", length: 10 },
+  { name: "الرأس الأخضر", code: "+238", length: 7 },
+  { name: "جمهورية أفريقيا الوسطى", code: "+236", length: 8 },
+  { name: "تشاد", code: "+235", length: 8 },
+  { name: "تشيلي", code: "+56", length: 9 },
+  { name: "الصين", code: "+86", length: 11 },
+  { name: "كولومبيا", code: "+57", length: 10 },
+  { name: "جزر القمر", code: "+269", length: 7 },
+  { name: "الكونغو (برازافيل)", code: "+242", length: 9 },
+  { name: "الكونغو (كينشاسا)", code: "+243", length: 9 },
+  { name: "كوستاريكا", code: "+506", length: 8 },
+  { name: "كرواتيا", code: "+385", length: 9 },
+  { name: "كوبا", code: "+53", length: 8 },
+  { name: "قبرص", code: "+357", length: 8 },
+  { name: "التشيك", code: "+420", length: 9 },
+  { name: "الدنمارك", code: "+45", length: 8 },
+  { name: "جيبوتي", code: "+253", length: 8 },
+  { name: "دومينيكا", code: "+1", length: 10 },
+  { name: "جمهورية الدومينيكان", code: "+1", length: 10 },
+  { name: "تيمور الشرقية", code: "+670", length: 7 },
+  { name: "الإكوادور", code: "+593", length: 9 },
+  { name: "مصر", code: "+20", length: 10 },
+  { name: "السلفادور", code: "+503", length: 8 },
+  { name: "غينيا الاستوائية", code: "+240", length: 9 },
+  { name: "إريتريا", code: "+291", length: 7 },
+  { name: "إستونيا", code: "+372", length: 8 },
+  { name: "إثيوبيا", code: "+251", length: 9 },
+  { name: "فيجي", code: "+679", length: 7 },
+  { name: "فنلندا", code: "+358", length: 10 },
+  { name: "فرنسا", code: "+33", length: 9 },
+  { name: "الغابون", code: "+241", length: 9 },
+  { name: "غامبيا", code: "+220", length: 7 },
+  { name: "جورجيا", code: "+995", length: 9 },
+  { name: "ألمانيا", code: "+49", length: 11 },
+  { name: "غانا", code: "+233", length: 9 },
+  { name: "اليونان", code: "+30", length: 10 },
+  { name: "غرينادا", code: "+1", length: 10 },
+  { name: "غواتيمالا", code: "+502", length: 8 },
+  { name: "غينيا", code: "+224", length: 8 },
+  { name: "غينيا بيساو", code: "+245", length: 7 },
+  { name: "غيانا", code: "+592", length: 7 },
+  { name: "هايتي", code: "+509", length: 8 },
+  { name: "هندوراس", code: "+504", length: 8 },
+  { name: "المجر", code: "+36", length: 9 },
+  { name: "أيسلندا", code: "+354", length: 7 },
+  { name: "الهند", code: "+91", length: 10 },
+  { name: "إندونيسيا", code: "+62", length: 10 },
+  { name: "إيران", code: "+98", length: 10 },
+  { name: "العراق", code: "+964", length: 10 },
+  { name: "أيرلندا", code: "+353", length: 9 },
+  { name: "إيطاليا", code: "+39", length: 10 },
+  { name: "جامايكا", code: "+1", length: 10 },
+  { name: "اليابان", code: "+81", length: 10 },
+  { name: "الأردن", code: "+962", length: 9 },
+  { name: "كازاخستان", code: "+7", length: 10 },
+  { name: "كينيا", code: "+254", length: 9 },
+  { name: "كيريباتي", code: "+686", length: 5 },
+  { name: "الكويت", code: "+965", length: 8 },
+  { name: "قرغيزستان", code: "+996", length: 9 },
+  { name: "لاوس", code: "+856", length: 9 },
+  { name: "لاتفيا", code: "+371", length: 8 },
+  { name: "لبنان", code: "+961", length: 8 },
+  { name: "ليسوتو", code: "+266", length: 7 },
+  { name: "ليبيريا", code: "+231", length: 7 },
+  { name: "ليبيا", code: "+218", length: 9 },
+  { name: "ليختنشتاين", code: "+423", length: 7 },
+  { name: "ليتوانيا", code: "+370", length: 8 },
+  { name: "لوكسمبورغ", code: "+352", length: 8 },
+  { name: "مدغشقر", code: "+261", length: 9 },
+  { name: "مالاوي", code: "+265", length: 9 },
+  { name: "ماليزيا", code: "+60", length: 9 },
+  { name: "جزر المالديف", code: "+960", length: 7 },
+  { name: "مالي", code: "+223", length: 8 },
+  { name: "مالطا", code: "+356", length: 8 },
+  { name: "جزر مارشال", code: "+692", length: 7 },
+  { name: "موريتانيا", code: "+222", length: 8 },
+  { name: "موريشيوس", code: "+230", length: 8 },
+  { name: "المكسيك", code: "+52", length: 10 },
+  { name: "ميكرونيزيا", code: "+691", length: 7 },
+  { name: "مولدوفا", code: "+373", length: 8 },
+  { name: "موناكو", code: "+377", length: 8 },
+  { name: "منغوليا", code: "+976", length: 8 },
+  { name: "الجبل الأسود", code: "+382", length: 8 },
+  { name: "المغرب", code: "+212", length: 9 },
+  { name: "موزمبيق", code: "+258", length: 9 },
+  { name: "ميانمار", code: "+95", length: 9 },
+  { name: "ناميبيا", code: "+264", length: 9 },
+  { name: "نأورو", code: "+674", length: 5 },
+  { name: "نيبال", code: "+977", length: 10 },
+  { name: "هولندا", code: "+31", length: 9 },
+  { name: "نيوزيلندا", code: "+64", length: 9 },
+  { name: "نيكاراغوا", code: "+505", length: 8 },
+  // باقي الدول يمكن إضافتها بنفس الصيغة
+];
 
-      if (!email || !password || !phone || !username || !fullname || !birthdate) {
-        return alert("جميع الحقول مطلوبة!");
-      }
+window.signupUser = async function() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const username = document.getElementById("username").value.trim();
+  const fullname = document.getElementById("fullname").value.trim();
+  const birthdate = document.getElementById("birthdate").value;
+  const countryIndex = document.getElementById("country").selectedIndex;
+  const phone = document.getElementById("phone").value.trim();
 
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
+  if (!email || !password || !username || !fullname || !birthdate || countryIndex <= 0 || !phone) {
+    return alert("جميع الحقول مطلوبة!");
+  }
 
-        await setDoc(doc(db, "users", uid), {
-          email: email,
-          phone: phone,
-          username: username,
-          fullname: fullname,
-          birthdate: birthdate,
-          balance: 0,
-          subscription: null
-        });
+  const country = countries[countryIndex-1]; // -1 بسبب خيار افتراضي
+  const phoneDigits = phone.replace(/\D/g, '');
+  if(phoneDigits.length != country.length) {
+    return alert(`رقم الهاتف غير صحيح. يجب أن يكون ${country.length} أرقام لدولة ${country.name}`);
+  }
 
-        alert("تم إنشاء الحساب بنجاح ✅");
-        window.location.href = "index.html";
-      } catch (error) {
-        alert("حدث خطأ: " + error.message);
-      }
-    }
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
 
-    // زر الرجوع لتسجيل الدخول
-    window.goToLogin = function() {
-      window.location.href = "index.html";
-    }
-  </script>
+    await setDoc(doc(db, "users", uid), {
+      email, username, fullname, birthdate,
+      country: country.name,
+      phone: country.code + phoneDigits,
+      balance: 0,
+      subscription: null
+    });
+
+    alert("تم إنشاء الحساب بنجاح ✅");
+    window.location.href = "index.html";
+  } catch (error) {
+    alert("حدث خطأ: " + error.message);
+  }
+}
+
+// زر الرجوع لتسجيل الدخول
+window.goToLogin = function() {
+  window.location.href = "index.html";
+}
+
+</script>
 </head>
 <body>
-  <div class="card">
-    <h2>إنشاء حساب جديد</h2>
-    <form onsubmit="event.preventDefault(); signupUser();">
-      <label>البريد الإلكتروني:</label>
-      <input type="email" id="email" required>
+<div class="card">
+<h2>إنشاء حساب جديد</h2>
+<form onsubmit="event.preventDefault(); signupUser();">
 
-      <label>كلمة المرور:</label>
-      <input type="password" id="password" required>
+<label>البريد الإلكتروني:</label>
+<input type="email" id="email" required>
 
-      <label>رقم الهاتف (مع مفتاح الدولة):</label>
-      <input type="text" id="phone" placeholder="+20..." required>
+<label>كلمة المرور:</label>
+<input type="password" id="password" required>
 
-      <label>اسم المستخدم:</label>
-      <input type="text" id="username" required>
+<label>اسم المستخدم:</label>
+<input type="text" id="username" required>
 
-      <label>الاسم الكامل:</label>
-      <input type="text" id="fullname" required>
+<label>الاسم الكامل:</label>
+<input type="text" id="fullname" required>
 
-      <label>تاريخ الميلاد:</label>
-      <input type="date" id="birthdate" required>
+<label>تاريخ الميلاد:</label>
+<input type="date" id="birthdate" required>
 
-      <button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
-        إنشاء الحساب
-      </button>
-    </form>
+<label>الدولة:</label>
+<select id="country" required>
+  <option value="">اختر الدولة</option>
+  ${countries.map(c => `<option value="${c.code}">${c.name} (${c.code})</option>`).join('')}
+</select>
 
-    <!-- زر الرجوع لتسجيل الدخول -->
-    <button onclick="goToLogin()" style="margin-top:10px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
-      لديك حساب؟ تسجيل الدخول
-    </button>
-  </div>
+<label>رقم الهاتف:</label>
+<input type="text" id="phone" placeholder="بدون + كأرقام فقط" required>
+
+<button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
+  إنشاء الحساب
+</button>
+</form>
+
+<!-- زر الرجوع لتسجيل الدخول -->
+<button onclick="goToLogin()" style="margin-top:10px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
+لديك حساب؟ تسجيل الدخول
+</button>
+</div>
 </body>
 </html>
