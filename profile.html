@@ -25,31 +25,32 @@
     const db = getFirestore(app);
     let currentUser = null;
 
+    const SUBSCRIPTION_COST = 2.5; // تكلفة الاشتراك الشهري
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          document.getElementById("email").textContent = data.email;
-          document.getElementById("phone").textContent = data.phone;
-          document.getElementById("birthdate").textContent = data.birthdate;
-          document.getElementById("balance").textContent = data.balance + " $";
-          document.getElementById("subscription").textContent = data.subscription || "لا يوجد اشتراك";
-          
-          // عرض موعد انتهاء الاشتراك
-          if(data.subscription) {
-            document.getElementById("subscription-end").textContent = data.subscription;
-          } else {
-            document.getElementById("subscription-end").textContent = "لا يوجد اشتراك";
-          }
-        }
+        await loadUserData();
       } else {
         window.location.href = "login.html";
       }
     });
+
+    async function loadUserData() {
+      if (!currentUser) return;
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        document.getElementById("email").textContent = data.email;
+        document.getElementById("phone").textContent = data.phone;
+        document.getElementById("birthdate").textContent = data.birthdate;
+        document.getElementById("balance").textContent = data.balance.toFixed(2) + " $";
+        document.getElementById("subscription").textContent = data.subscription || "لا يوجد اشتراك";
+        document.getElementById("subscription-end").textContent = data.subscription || "لا يوجد اشتراك";
+      }
+    }
 
     window.logout = async function() {
       await signOut(auth);
@@ -63,21 +64,39 @@
       const oldBalance = docSnap.data().balance || 0;
       const newBalance = oldBalance + amount;
       await updateDoc(docRef, { balance: newBalance });
-      document.getElementById("balance").textContent = newBalance + " $";
+      document.getElementById("balance").textContent = newBalance.toFixed(2) + " $";
       alert("تم إضافة " + amount + "$ إلى رصيدك ✅");
     }
 
+    // تجديد الاشتراك من الرصيد
     window.renewSubscription = async function() {
       if (!currentUser) return;
       const docRef = doc(db, "users", currentUser.uid);
       const docSnap = await getDoc(docRef);
+      const data = docSnap.data();
+      const balance = data.balance || 0;
 
-      const currentSub = docSnap.data().subscription ? new Date(docSnap.data().subscription) : new Date();
+      if(balance < SUBSCRIPTION_COST) {
+        alert("رصيدك غير كافي لتجديد الاشتراك 😢");
+        return;
+      }
+
+      // خصم الرصيد
+      const newBalance = balance - SUBSCRIPTION_COST;
+
+      // تحديد موعد انتهاء الاشتراك الجديد
+      const currentSub = data.subscription ? new Date(data.subscription) : new Date();
       const newSubDate = new Date(currentSub.setMonth(currentSub.getMonth() + 1)).toISOString().split('T')[0];
 
-      await updateDoc(docRef, { subscription: newSubDate });
+      await updateDoc(docRef, { 
+        balance: newBalance, 
+        subscription: newSubDate 
+      });
+
+      document.getElementById("balance").textContent = newBalance.toFixed(2) + " $";
       document.getElementById("subscription").textContent = newSubDate;
       document.getElementById("subscription-end").textContent = newSubDate;
+
       alert("تم تجديد الاشتراك لشهر جديد ✅");
     }
   </script>
@@ -104,7 +123,7 @@
     </script>
 
     <h3>اشتراك</h3>
-    <button onclick="renewSubscription()">تجديد الاشتراك لشهر</button>
+    <button onclick="renewSubscription()">تجديد الاشتراك الشهري (2.50$)</button>
 
     <h3>الحساب</h3>
     <button onclick="logout()">تسجيل الخروج</button>
