@@ -2,50 +2,111 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>صفحة الاشتراك</title>
+  <title>ملف العميل</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
     .card { display: inline-block; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-    h2 { color: #333; }
+    input { padding: 8px; width: 100px; margin-bottom: 20px; }
+    button { padding: 10px 20px; margin: 5px; }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>اشتراك PayPal</h2>
-    <p>اضغط على الزر للاشتراك في الخدمة.</p>
+<div class="card">
+  <h2>ملف العميل</h2>
+  <p><strong>الرصيد الحالي:</strong> <span id="balance">جار التحميل...</span> $</p>
 
-    <!-- مكان زر الاشتراك -->
-    <div id="paypal-button-container-P-9T757258JL3589058NCSENQQ"></div>
-  </div>
+  <h3>شحن رصيدك</h3>
+  <input type="number" id="amount" placeholder="أدخل المبلغ" min="1" step="0.01">
+  <div id="paypal-charge-container"></div>
 
-  <!-- تحميل مكتبة PayPal SDK -->
-  <script src="https://www.paypal.com/sdk/js?client-id=AZ44qaQI2dxTksnrqKU4gT1rL1HXZbWFmk2fqM5thehRfuWiL4DQI0ZP7dIISJwAoiO4qrP9D4Iw1a_i&vault=true&intent=subscription"></script>
+  <h3>الاشتراك الشهري</h3>
+  <div id="paypal-subscription-container"></div>
+</div>
 
-  <script>
-    paypal.Buttons({
-        style: {
-            shape: 'rect',
-            color: 'gold',
-            layout: 'vertical',
-            label: 'subscribe'
-        },
-        createSubscription: function(data, actions) {
-            return actions.subscription.create({
-                plan_id: 'P-9T757258JL3589058NCSENQQ', // ضع هنا Plan ID الخاص بك
-                quantity: 1
-            });
-        },
-        onApprove: function(data, actions) {
-            alert("تم الاشتراك بنجاح! رقم الاشتراك: " + data.subscriptionID);
-            // هنا يمكنك إضافة كود لتسجيل الاشتراك في Firebase أو تحديث الرصيد
-        },
-        onError: function(err) {
-            console.error(err);
-            alert("حدث خطأ أثناء معالجة الاشتراك.");
-        }
-    }).render('#paypal-button-container-P-9T757258JL3589058NCSENQQ');
-  </script>
+<!-- PayPal SDK -->
+<script src="https://www.paypal.com/sdk/js?client-id=AZ44qaQI2dxTksnrqKU4gT1rL1HXZbWFmk2fqM5thehRfuWiL4DQI0ZP7dIISJwAoiO4qrP9D4Iw1a_i&currency=USD"></script>
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+    authDomain: "fir-dba4c.firebaseapp.com",
+    projectId: "fir-dba4c",
+    storageBucket: "fir-dba4c.firebasestorage.app",
+    messagingSenderId: "160255207915",
+    appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
+    measurementId: "G-GYPNMR85G2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  let currentUser = null;
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+    } else {
+      currentUser = user;
+      await loadUserBalance();
+    }
+  });
+
+  async function loadUserBalance() {
+    const docRef = doc(db, "users", currentUser.uid);
+    const docSnap = await getDoc(docRef);
+    const balance = docSnap.exists() ? (docSnap.data().balance || 0) : 0;
+    document.getElementById("balance").textContent = balance.toFixed(2);
+  }
+
+  async function addBalance(amount) {
+    const docRef = doc(db, "users", currentUser.uid);
+    const docSnap = await getDoc(docRef);
+    const oldBalance = docSnap.data().balance || 0;
+    const newBalance = oldBalance + parseFloat(amount);
+    await updateDoc(docRef, { balance: newBalance });
+    document.getElementById("balance").textContent = newBalance.toFixed(2);
+    alert("تم إضافة " + amount + "$ إلى رصيدك ✅");
+  }
+
+  // زر شحن المبلغ الذي يحدده العميل
+  paypal.Buttons({
+    createOrder: function(data, actions) {
+      const amount = document.getElementById('amount').value;
+      if(!amount || amount <= 0) { alert('ادخل مبلغ صالح!'); return; }
+      return actions.order.create({
+        purchase_units: [{ amount: { value: amount } }]
+      });
+    },
+    onApprove: function(data, actions) {
+      return actions.order.capture().then(function(details) {
+        const amount = details.purchase_units[0].amount.value;
+        addBalance(amount);
+      });
+    },
+    onError: function(err) { console.error(err); alert("حدث خطأ أثناء الدفع."); }
+  }).render('#paypal-charge-container');
+
+  // زر الاشتراك الشهري
+  paypal.Buttons({
+    style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
+    createSubscription: function(data, actions) {
+      return actions.subscription.create({
+        plan_id: 'P-6GV504725H685590YNCSFSGY' // ضع هنا Plan ID الخاص بك
+      });
+    },
+    onApprove: function(data, actions) {
+      alert("تم الاشتراك بنجاح! رقم الاشتراك: " + data.subscriptionID);
+      // هنا يمكن تحديث الاشتراك في Firebase إذا أحببت
+    },
+    onError: function(err) { console.error(err); alert("حدث خطأ أثناء الاشتراك."); }
+  }).render('#paypal-subscription-container');
+
+</script>
 </body>
 </html>
