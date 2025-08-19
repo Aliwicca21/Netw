@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>إنشاء حساب جديد</title>
+  <title>إنشاء حساب</title>
   <link rel="stylesheet" href="auth.css">
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
@@ -23,36 +23,30 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    window.registerUser = async function() {
-      const fullname = document.getElementById("fullname").value.trim();
-      const username = document.getElementById("username").value.trim();
+    window.signupUser = async function() {
       const email = document.getElementById("email").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const birthdate = document.getElementById("birthdate").value;
       const password = document.getElementById("password").value;
-      const countryCode = document.getElementById("country-code").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const username = document.getElementById("username").value.trim();
+      const fullname = document.getElementById("fullname").value.trim();
+      const birthdate = document.getElementById("birthdate").value;
 
-      // تحقق من تعبئة كل الحقول
-      if (!fullname || !username || !email || !phone || !birthdate || !password || !countryCode) {
+      if (!email || !password || !phone || !username || !fullname || !birthdate) {
         return alert("جميع الحقول مطلوبة!");
       }
 
-      const fullPhone = `+${countryCode}${phone}`;
-
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        const uid = userCredential.user.uid;
 
-        // حفظ البيانات في Firestore
-        await setDoc(doc(db, "users", user.uid), {
-          fullname: fullname,
-          username: username,
+        await setDoc(doc(db, "users", uid), {
           email: email,
-          phone: fullPhone,
+          phone: phone,
+          username: username,
+          fullname: fullname,
           birthdate: birthdate,
           balance: 0,
-          subscription: null,
-          botActive: false
+          subscription: null
         });
 
         alert("تم إنشاء الحساب بنجاح ✅");
@@ -61,35 +55,44 @@
         alert("حدث خطأ: " + error.message);
       }
     }
+
+    // زر الرجوع لتسجيل الدخول
+    window.goToLogin = function() {
+      window.location.href = "login.html";
+    }
   </script>
 </head>
 <body>
   <div class="card">
     <h2>إنشاء حساب جديد</h2>
-    <form onsubmit="event.preventDefault(); registerUser();">
-      <label>الاسم الكامل:</label>
-      <input type="text" id="fullname" required>
-
-      <label>اسم المستخدم:</label>
-      <input type="text" id="username" required>
-
-      <label>الإيميل:</label>
+    <form onsubmit="event.preventDefault(); signupUser();">
+      <label>البريد الإلكتروني:</label>
       <input type="email" id="email" required>
-
-      <label>رمز الدولة:</label>
-      <input type="text" id="country-code" placeholder="مثال: 20 لمصر" required>
-
-      <label>رقم الهاتف:</label>
-      <input type="tel" id="phone" required>
-
-      <label>تاريخ الميلاد:</label>
-      <input type="date" id="birthdate" required>
 
       <label>كلمة المرور:</label>
       <input type="password" id="password" required>
 
-      <button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">إنشاء الحساب</button>
+      <label>رقم الهاتف (مع مفتاح الدولة):</label>
+      <input type="text" id="phone" placeholder="+20..." required>
+
+      <label>اسم المستخدم:</label>
+      <input type="text" id="username" required>
+
+      <label>الاسم الكامل:</label>
+      <input type="text" id="fullname" required>
+
+      <label>تاريخ الميلاد:</label>
+      <input type="date" id="birthdate" required>
+
+      <button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
+        إنشاء الحساب
+      </button>
     </form>
+
+    <!-- زر الرجوع لتسجيل الدخول -->
+    <button onclick="goToLogin()" style="margin-top:10px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
+      لديك حساب؟ تسجيل الدخول
+    </button>
   </div>
 </body>
 </html>
