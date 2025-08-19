@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>الملف الشخصي</title>
   <link rel="stylesheet" href="auth.css">
+  <!-- PayPal SDK -->
+  <script src="https://www.paypal.com/sdk/js?client-id=AZ44qaQI2dxTksnrqKU4gT1rL1HXZbWFmk2fqM5thehRfuWiL4DQI0ZP7dIISJwAoiO4qrP9D4Iw1a_i&vault=true&intent=subscription"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -23,9 +25,6 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     let currentUser = null;
-
-    const SUBSCRIPTION_COSTS = { month: 2.5, "3months": 7.5, year: 30 };
-    const SUBSCRIPTION_MONTHS = { month: 1, "3months": 3, year: 12 };
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -47,7 +46,7 @@
         document.getElementById("email").textContent = data.email;
         document.getElementById("phone").textContent = data.phone;
         document.getElementById("birthdate").textContent = data.birthdate;
-        document.getElementById("balance").textContent = data.balance.toFixed(2) + " $";
+        document.getElementById("balance").textContent = (data.balance || 0).toFixed(2) + " $";
         document.getElementById("subscription").textContent = data.subscription || "لا يوجد اشتراك";
         document.getElementById("subscription-end").textContent = data.subscription || "لا يوجد اشتراك";
         document.getElementById("bot-status").textContent = data.botActive ? "✅ شغال" : "❌ متوقف";
@@ -56,45 +55,41 @@
 
     window.logout = async function() {
       await signOut(auth);
-      window.location.href = "index.html";
+      window.location.href = "login.html";
     }
 
-    // زر شحن الرصيد يفتح صفحة جديدة
-    window.goToRecharge = function() {
-      window.location.href = "recharge.html";
+    window.goRecharge = function() {
+      window.location.href = "recharge.html"; // ينقلك لصفحة شحن الرصيد
     }
 
-    window.renewSubscription = async function(type) {
-      if (!currentUser) return;
-      const docRef = doc(db, "users", currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      const data = docSnap.data();
-      const balance = data.balance || 0;
-      const cost = SUBSCRIPTION_COSTS[type];
-      const monthsToAdd = SUBSCRIPTION_MONTHS[type];
-
-      if(balance < cost) return alert("رصيدك غير كافي لتجديد الاشتراك 😢");
-
-      const newBalance = balance - cost;
-      const currentSub = data.subscription ? new Date(data.subscription) : new Date();
-      const newSubDate = new Date(currentSub.setMonth(currentSub.getMonth() + monthsToAdd)).toISOString().split('T')[0];
-
-      await updateDoc(docRef, { balance: newBalance, subscription: newSubDate, botActive: true });
-      document.getElementById("balance").textContent = newBalance.toFixed(2) + " $";
-      document.getElementById("subscription").textContent = newSubDate;
-      document.getElementById("subscription-end").textContent = newSubDate;
-      document.getElementById("bot-status").textContent = "✅ شغال";
-
-      alert(`تم تجديد الاشتراك لمدة ${monthsToAdd} شهر ✅ وتم تفعيل البوت`);
+    window.renewSubscriptionPayPal = function() {
+      paypal.Buttons({
+        style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
+        createSubscription: function(data, actions) {
+          return actions.subscription.create({ plan_id: 'P-6GV504725H685590YNCSFSGY' });
+        },
+        onApprove: async function(data, actions) {
+          alert("تم الاشتراك بنجاح! ID: " + data.subscriptionID);
+          if (!currentUser) return;
+          const docRef = doc(db, "users", currentUser.uid);
+          const newDate = new Date();
+          newDate.setMonth(newDate.getMonth() + 1); // مثال: اشتراك شهر واحد
+          await updateDoc(docRef, { subscription: newDate.toISOString().split('T')[0], botActive: true });
+          await loadUserData();
+        }
+      }).render('#paypal-subscribe-container');
     }
 
     window.cancelSubscription = async function() {
       if (!currentUser) return;
+
+      // ✅ رسالة تأكيد قبل الإلغاء
+      const confirmCancel = confirm("هل أنت متأكد أنك تريد إلغاء الاشتراك؟");
+      if (!confirmCancel) return; // لو اختار لا مش هيعمل حاجة
+
       const docRef = doc(db, "users", currentUser.uid);
       await updateDoc(docRef, { subscription: null, botActive: false });
-      document.getElementById("subscription").textContent = "لا يوجد اشتراك";
-      document.getElementById("subscription-end").textContent = "لا يوجد اشتراك";
-      document.getElementById("bot-status").textContent = "❌ متوقف";
+      await loadUserData();
       alert("تم إلغاء الاشتراك");
     }
   </script>
@@ -113,18 +108,15 @@
     <p><strong>حالة البوت:</strong> <span id="bot-status">جار التحميل...</span></p>
 
     <h3>شحن الرصيد</h3>
-    <button onclick="goToRecharge()" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer;">
-      شحن الرصيد
-    </button>
+    <button onclick="goRecharge()" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer;">شحن الرصيد</button>
 
     <h3>اشتراك</h3>
-    <button onclick="renewSubscription('month')">تجديد شهر (2.50$)</button>
-    <button onclick="renewSubscription('3months')">تجديد 3 أشهر (7.50$)</button>
-    <button onclick="renewSubscription('year')">تجديد سنة (30$)</button>
-    <button onclick="cancelSubscription()" style="background-color:red; color:white;">إلغاء الاشتراك</button>
+    <div id="paypal-subscribe-container"></div>
+    <button onclick="renewSubscriptionPayPal()" style="padding:8px 16px; background-color:#28a745; color:white; border:none; border-radius:5px; cursor:pointer;">اشترك عبر PayPal</button>
+    <button onclick="cancelSubscription()" style="background-color:red; color:white; padding:8px 16px; border:none; border-radius:5px; cursor:pointer;">إلغاء الاشتراك</button>
 
     <h3>الحساب</h3>
-    <button onclick="logout()">رجوع إلى تسجيل الدخول</button>
+    <button onclick="logout()" style="padding:8px 16px; border:none; border-radius:5px; background-color:gray; color:white; cursor:pointer;">تسجيل الخروج</button>
   </div>
 </body>
 </html>
