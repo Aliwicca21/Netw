@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>شحن الرصيد</title>
+  <link rel="stylesheet" href="auth.css">
+  <script src="https://www.paypal.com/sdk/js?client-id=BAAOBERDydOSuUVzDC-pOzaroIvnZwPLoJ7CpH16gd14qDn-Iv7GV_qtqu_4US4diU3wfrY83ErgCtKXLs&currency=USD"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+      authDomain: "fir-dba4c.firebaseapp.com",
+      projectId: "fir-dba4c",
+      storageBucket: "fir-dba4c.firebasestorage.app",
+      messagingSenderId: "160255207915",
+      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
+      measurementId: "G-GYPNMR85G2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    let currentUser = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if(user){
+        currentUser = user;
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    async function addBalance(amount) {
+      if(!currentUser) return;
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      const oldBalance = docSnap.data().balance || 0;
+      const newBalance = oldBalance + amount;
+      await updateDoc(docRef, { balance: newBalance });
+      alert("تم إضافة " + amount + "$ إلى رصيدك ✅");
+    }
+
+    // زر PayPal للشحن
+    window.addEventListener("DOMContentLoaded", function(){
+      paypal.Buttons({
+        createOrder: function(data, actions) {
+          return actions.order.create({
+            purchase_units: [{
+              amount: { value: '5.00' } // مبلغ الشحن
+            }]
+          });
+        },
+        onApprove: function(data, actions) {
+          return actions.order.capture().then(function(details) {
+            alert('تم الدفع بواسطة ' + details.payer.name.given_name);
+            addBalance(5); // إضافة الرصيد بعد الدفع
+          });
+        }
+      }).render('#paypal-button-container');
+    });
+  </script>
+</head>
+<body>
+  <div class="card">
+    <h2>شحن الرصيد</h2>
+    <p>يمكنك شحن رصيدك عبر PayPal. المبلغ الحالي للشحن: 5$</p>
+
+    <div id="paypal-button-container"></div>
+
+    <br>
+    <a href="profile.html">العودة للملف الشخصي</a>
+  </div>
+</body>
+</html>
