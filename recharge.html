@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <title>شحن الرصيد</title>
   <link rel="stylesheet" href="auth.css">
-  <!-- PayPal SDK -->
-  <script src="https://www.paypal.com/sdk/js?client-id=BAAOBERDydOSuUVzDC-pOzaroIvnZwPLoJ7CpH16gd14qDn-Iv7GV_qtqu_4US4diU3wfrY83ErgCtKXLs&currency=USD"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=AZ44qaQI2dxTksnrqKU4gT1rL1HXZbWFmk2fqM5thehRfuWiL4DQI0ZP7dIISJwAoiO4qrP9D4Iw1a_i&currency=USD"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -27,55 +26,74 @@
     let currentUser = null;
 
     onAuthStateChanged(auth, (user) => {
-      if (!user) window.location.href = "login.html";
-      else currentUser = user;
+      if (user) {
+        currentUser = user;
+      } else {
+        window.location.href = "login.html";
+      }
     });
 
     async function updateBalance(amount) {
       if (!currentUser) return;
-      const docRef = doc(db, "users", currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      const oldBalance = docSnap.data().balance || 0;
+      const userRef = doc(db, "users", currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      const oldBalance = userSnap.data().balance || 0;
       const newBalance = oldBalance + amount;
-      await updateDoc(docRef, { balance: newBalance });
+      await updateDoc(userRef, { balance: newBalance });
       alert("تم إضافة " + amount + "$ إلى رصيدك ✅");
     }
 
-    function startPayment() {
-      const amount = parseFloat(document.getElementById("amount").value);
-      if (isNaN(amount) || amount <= 0) return alert("المبلغ غير صالح");
-
+    function createPayPalButton(amount) {
       paypal.Buttons({
+        style: {
+          shape: 'rect',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'pay'
+        },
         createOrder: function(data, actions) {
           return actions.order.create({
-            purchase_units: [{ amount: { value: amount } }]
+            purchase_units: [{ amount: { value: amount.toFixed(2) } }]
           });
         },
         onApprove: function(data, actions) {
           return actions.order.capture().then(function(details) {
             updateBalance(amount);
             alert("تم الدفع بواسطة " + details.payer.name.given_name);
-            window.location.href = "profile.html"; // يرجع لصفحة الملف الشخصي
           });
         }
       }).render('#paypal-button-container');
+    }
+
+    window.startPayment = function() {
+      const amountInput = parseFloat(document.getElementById("amount").value);
+      if (isNaN(amountInput) || amountInput <= 0) {
+        alert("الرجاء إدخال مبلغ صحيح");
+        return;
+      }
+      document.getElementById("paypal-button-container").innerHTML = "";
+      createPayPalButton(amountInput);
+    }
+
+    window.goBack = function() {
+      window.location.href = "profile.html";
     }
   </script>
 </head>
 <body>
   <div class="card">
     <h2>شحن الرصيد</h2>
-    <label>أدخل المبلغ ($):</label>
-    <input type="number" id="amount" min="1" placeholder="مثلاً 5" style="padding:8px; margin-bottom:10px; width:100%;">
+    <label>المبلغ بال$:</label>
+    <input type="number" id="amount" placeholder="مثال: 5" min="1">
 
-    <button onclick="startPayment()" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer;">
-      الدفع بواسطة PayPal
+    <button onclick="startPayment()" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
+      دفع عبر PayPal
     </button>
 
     <div id="paypal-button-container" style="margin-top:20px;"></div>
 
-    <button onclick="window.location.href='profile.html'" style="margin-top:20px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
-      العودة للملف الشخصي
+    <button onclick="goBack()" style="padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:20px;">
+      العودة إلى الملف الشخصي
     </button>
   </div>
 </body>
