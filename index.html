@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>تسجيل الدخول</title>
-<link rel="stylesheet" href="auth.css">
+  <link rel="stylesheet" href="auth.css">
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
@@ -20,25 +21,69 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
     window.loginUser = async function() {
-      const email = document.getElementById("email").value;
+      const identifier = document.getElementById("identifier").value.trim();
       const password = document.getElementById("password").value;
+
+      if (!identifier || !password) {
+        return alert("جميع الحقول مطلوبة!");
+      }
+
       try {
-        await signInWithEmailAndPassword(auth, email, password);
+        let emailToLogin = "";
+
+        // نبحث عن المستخدم باستخدام البريد أو الهاتف أو اسم المستخدم
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", identifier));
+        let querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          // تحقق من رقم الهاتف
+          const qPhone = query(usersRef, where("phone", "==", identifier));
+          querySnapshot = await getDocs(qPhone);
+
+          if (querySnapshot.empty) {
+            // تحقق من اسم المستخدم
+            const qUsername = query(usersRef, where("username", "==", identifier));
+            querySnapshot = await getDocs(qUsername);
+
+            if (querySnapshot.empty) {
+              return alert("المستخدم غير موجود!");
+            } else {
+              emailToLogin = querySnapshot.docs[0].data().email;
+            }
+          } else {
+            emailToLogin = querySnapshot.docs[0].data().email;
+          }
+        } else {
+          emailToLogin = querySnapshot.docs[0].data().email;
+        }
+
+        // تسجيل الدخول باستخدام الإيميل وكلمة المرور
+        await signInWithEmailAndPassword(auth, emailToLogin, password);
         alert("تم تسجيل الدخول بنجاح ✅");
         window.location.href = "profile.html";
       } catch (error) {
-        alert("خطأ: " + error.message);
+        alert("خطأ في تسجيل الدخول: " + error.message);
       }
     }
   </script>
 </head>
 <body>
-  <h2>تسجيل الدخول</h2>
-  <input type="email" id="email" placeholder="الإيميل"><br>
-  <input type="password" id="password" placeholder="كلمة المرور"><br>
-  <button onclick="loginUser()">دخول</button>
-  <p>ما عندكش حساب؟ <a href="register.html">إنشاء حساب</a></p>
+  <div class="card">
+    <h2>تسجيل الدخول</h2>
+    <form onsubmit="event.preventDefault(); loginUser();">
+      <label>البريد أو رقم الهاتف أو اسم المستخدم:</label>
+      <input type="text" id="identifier" required>
+
+      <label>كلمة المرور:</label>
+      <input type="password" id="password" required>
+
+      <button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">تسجيل الدخول</button>
+    </form>
+    <p>ليس لديك حساب؟ <a href="signup.html">إنشاء حساب</a></p>
+  </div>
 </body>
 </html>
