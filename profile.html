@@ -155,26 +155,4 @@
     });
   </script>
 </body>
-</html>    <p><strong>الرصيد:</strong> <span id="balance">جار التحميل...</span></p>
-    <p><strong>الاشتراك:</strong> <span id="subscription">جار التحميل...</span></p>
-    <p><strong>موعد انتهاء الاشتراك:</strong> <span id="subscription-end">جار التحميل...</span></p>
-
-    <h3>شحن الرصيد (PayPal)</h3>
-    <div id="paypal-container-S5TM2YB5YRGRW"></div>
-    <script>
-      paypal.HostedButtons({
-        hostedButtonId: "S5TM2YB5YRGRW",
-        onApprove: function(data, actions) {
-          window.addBalanceAfterPayment(5);
-        }
-      }).render("#paypal-container-S5TM2YB5YRGRW");
-    </script>
-
-    <h3>اشتراك</h3>
-    <button onclick="renewSubscription()">تجديد الاشتراك الشهري (2.50$)</button>
-
-    <h3>الحساب</h3>
-    <button onclick="logout()">تسجيل الخروج</button>
-  </div>
-</body>
 </html>
