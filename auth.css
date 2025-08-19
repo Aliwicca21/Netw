@@ -1,10 +1,104 @@
-*{box-sizing:border-box}
-body{font-family:Arial,Helvetica,sans-serif;direction:rtl;background:#f6f7fb;margin:0;display:grid;place-items:center;min-height:100vh}
-.card{width:100%;max-width:420px;background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08);padding:24px}
-h2{margin-top:0}
-input{width:100%;padding:12px 14px;margin:8px 0;border:1px solid #e5e7eb;border-radius:10px;outline:none}
-input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.15)}
-button{width:100%;padding:12px 14px;border:0;border-radius:12px;background:#111827;color:#fff;cursor:pointer;margin-top:8px}
-button:hover{opacity:.95}
-a{color:#2563eb;text-decoration:none}
-a:hover{text-decoration:underline}
+/* ====== Reset بسيط ====== */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  direction: rtl;
+  background: #f6f7fb;
+  display: grid;
+  place-items: center;           /* وسط الصفحة */
+  padding: 16px;
+  color: #111827;
+}
+
+/* ====== كرت/حاوية (اختياري) ======
+   لو حاطط العناصر داخل <div class="card"> هتظهر بشكل أجمل.
+   لو مش موجودة، مافيش مشكلة – التنسيقات العامة تحت هتغطي.
+*/
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  padding: 24px;
+}
+
+/* لو مافيش .card، خلّي العناصر تاخد عرض مناسب */
+body > h2,
+body > input,
+body > button,
+body > p {
+  width: min(100%, 420px);
+}
+
+/* ====== العناوين ====== */
+h2 {
+  margin: 0 0 12px 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* ====== الحقول ====== */
+input {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 8px 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+}
+input::placeholder { color: #9ca3af; }
+input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+}
+
+/* ====== الأزرار ====== */
+button {
+  width: 100%;
+  padding: 12px 14px;
+  margin-top: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: #111827;
+  color: #fff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform .05s ease, opacity .2s ease;
+}
+button:hover { opacity: .96; }
+button:active { transform: translateY(1px); }
+button[disabled] { opacity: .6; cursor: not-allowed; }
+
+/* زر مفرغ (لو احتجته لاحقًا) */
+.btn-outline {
+  background: #fff;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+
+/* ====== الروابط ====== */
+p { margin: 10px 0 0; font-size: 14px; color: #374151; }
+a { color: #2563eb; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ====== رسائل صغيرة (لو احتجت تعرض خطأ/نجاح) ====== */
+.notice {
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin: 8px 0;
+}
+.notice.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.notice.error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* ====== استجابة للشاشات الصغيرة ====== */
+@media (max-width: 420px) {
+  .card { padding: 18px; border-radius: 14px; }
+  h2 { font-size: 20px; }
+}
