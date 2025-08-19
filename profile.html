@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>الملف الشخصي</title>
   <link rel="stylesheet" href="auth.css">
-  <!-- PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=BAAOBERDydOSuUVzDC-pOzaroIvnZwPLoJ7CpH16gd14qDn-Iv7GV_qtqu_4US4diU3wfrY83ErgCtKXLs&currency=USD"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
@@ -26,15 +25,12 @@
     const db = getFirestore(app);
     let currentUser = null;
 
-    const SUBSCRIPTION_COSTS = { month: 2.5, "3months": 7.5, year: 30 };
-    const SUBSCRIPTION_MONTHS = { month: 1, "3months": 3, year: 12 };
-
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
         await loadUserData();
       } else {
-        window.location.href = "index.html";
+        window.location.href = "login.html";
       }
     });
 
@@ -44,15 +40,12 @@
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
-        document.getElementById("username").textContent = data.username || "لا يوجد";
-        document.getElementById("fullname").textContent = data.fullname || "لا يوجد";
         document.getElementById("email").textContent = data.email;
         document.getElementById("phone").textContent = data.phone;
         document.getElementById("birthdate").textContent = data.birthdate;
         document.getElementById("balance").textContent = data.balance.toFixed(2) + " $";
         document.getElementById("subscription").textContent = data.subscription || "لا يوجد اشتراك";
         document.getElementById("subscription-end").textContent = data.subscription || "لا يوجد اشتراك";
-        document.getElementById("bot-status").textContent = data.botActive ? "✅ شغال" : "❌ متوقف";
       }
     }
 
@@ -61,94 +54,64 @@
       window.location.href = "login.html";
     }
 
-    async function updateBalance(amount) {
-      if (!currentUser) return;
-      const docRef = doc(db, "users", currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      const oldBalance = docSnap.data().balance || 0;
-      const newBalance = oldBalance + amount;
-      await updateDoc(docRef, { balance: newBalance });
-      document.getElementById("balance").textContent = newBalance.toFixed(2) + " $";
-      alert("تم إضافة " + amount + "$ إلى رصيدك ✅");
-      return newBalance;
-    }
+    window.startPayPalPayment = function() {
+      const amount = parseFloat(document.getElementById("amount").value);
+      if (isNaN(amount) || amount <= 0) {
+        alert("ادخل مبلغ صحيح لشحن الرصيد!");
+        return;
+      }
 
-    window.recharge = function() {
-      let amount = parseFloat(prompt("أدخل المبلغ الذي تريد شحنه بال$"));
-      if (isNaN(amount) || amount <= 0) return alert("المبلغ غير صالح");
       paypal.Buttons({
         createOrder: function(data, actions) {
-          return actions.order.create({ purchase_units: [{ amount: { value: amount } }] });
-        },
-        onApprove: function(data, actions) {
-          return actions.order.capture().then(function(details) {
-            updateBalance(amount);
-            alert("تم الدفع بواسطة " + details.payer.name.given_name);
+          return actions.order.create({
+            purchase_units: [{
+              amount: { value: amount.toFixed(2) }
+            }]
           });
+        },
+        onApprove: async function(data, actions) {
+          const details = await actions.order.capture();
+          alert("تم الدفع بواسطة " + details.payer.name.given_name + " ✅");
+
+          // تحديث رصيد المستخدم في Firebase
+          const docRef = doc(db, "users", currentUser.uid);
+          const docSnap = await getDoc(docRef);
+          const oldBalance = docSnap.data().balance || 0;
+          const newBalance = oldBalance + amount;
+          await updateDoc(docRef, { balance: newBalance });
+          document.getElementById("balance").textContent = newBalance.toFixed(2) + " $";
         }
-      }).render('#paypal-recharge-container');
-    }
-
-    window.renewSubscription = async function(type) {
-      if (!currentUser) return;
-      const docRef = doc(db, "users", currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      const data = docSnap.data();
-      const balance = data.balance || 0;
-      const cost = SUBSCRIPTION_COSTS[type];
-      const monthsToAdd = SUBSCRIPTION_MONTHS[type];
-
-      if(balance < cost) return alert("رصيدك غير كافي لتجديد الاشتراك 😢");
-
-      const newBalance = balance - cost;
-      const currentSub = data.subscription ? new Date(data.subscription) : new Date();
-      const newSubDate = new Date(currentSub.setMonth(currentSub.getMonth() + monthsToAdd)).toISOString().split('T')[0];
-
-      await updateDoc(docRef, { balance: newBalance, subscription: newSubDate, botActive: true });
-      document.getElementById("balance").textContent = newBalance.toFixed(2) + " $";
-      document.getElementById("subscription").textContent = newSubDate;
-      document.getElementById("subscription-end").textContent = newSubDate;
-      document.getElementById("bot-status").textContent = "✅ شغال";
-
-      alert(`تم تجديد الاشتراك لمدة ${monthsToAdd} شهر ✅ وتم تفعيل البوت`);
-    }
-
-    window.cancelSubscription = async function() {
-      if (!currentUser) return;
-      const docRef = doc(db, "users", currentUser.uid);
-      await updateDoc(docRef, { subscription: null, botActive: false });
-      document.getElementById("subscription").textContent = "لا يوجد اشتراك";
-      document.getElementById("subscription-end").textContent = "لا يوجد اشتراك";
-      document.getElementById("bot-status").textContent = "❌ متوقف";
-      alert("تم إلغاء الاشتراك");
+      }).render('#paypal-button-container-temp');
     }
   </script>
 </head>
 <body>
   <div class="card">
     <h2>الملف الشخصي</h2>
-    <p><strong>اسم المستخدم:</strong> <span id="username">جار التحميل...</span></p>
-    <p><strong>الاسم الكامل:</strong> <span id="fullname">جار التحميل...</span></p>
     <p><strong>الإيميل:</strong> <span id="email">جار التحميل...</span></p>
     <p><strong>رقم الهاتف:</strong> <span id="phone">جار التحميل...</span></p>
     <p><strong>تاريخ الميلاد:</strong> <span id="birthdate">جار التحميل...</span></p>
     <p><strong>الرصيد:</strong> <span id="balance">جار التحميل...</span></p>
     <p><strong>الاشتراك:</strong> <span id="subscription">جار التحميل...</span></p>
     <p><strong>موعد انتهاء الاشتراك:</strong> <span id="subscription-end">جار التحميل...</span></p>
-    <p><strong>حالة البوت:</strong> <span id="bot-status">جار التحميل...</span></p>
 
+    <!-- شحن الرصيد مباشرة -->
     <h3>شحن الرصيد</h3>
-    <button onclick="recharge()" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer;">شحن الرصيد</button>
-    <div id="paypal-recharge-container"></div>
-
-    <h3>اشتراك</h3>
-    <button onclick="renewSubscription('month')">تجديد شهر (2.50$)</button>
-    <button onclick="renewSubscription('3months')">تجديد 3 أشهر (7.50$)</button>
-    <button onclick="renewSubscription('year')">تجديد سنة (30$)</button>
-    <button onclick="cancelSubscription()" style="background-color:red; color:white;">إلغاء الاشتراك</button>
+    <input type="number" id="amount" placeholder="أدخل المبلغ" min="1" step="0.01">
+    <button onclick="startPayPalPayment()" style="
+      padding: 10px 20px;
+      background-color: #0070ba;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 16px;
+    ">شحن الرصيد</button>
+    <div id="paypal-button-container-temp" style="margin-top:20px;"></div>
 
     <h3>الحساب</h3>
-    <button onclick="logout()">رجوع إلى تسجيل الدخول</button>
+    <button onclick="logout()">تسجيل الخروج</button>
   </div>
 </body>
 </html>
