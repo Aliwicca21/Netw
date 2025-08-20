@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>بيانات البوت</title>
+  <link rel="stylesheet" href="auth.css">
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+      authDomain: "fir-dba4c.firebaseapp.com",
+      projectId: "fir-dba4c",
+      storageBucket: "fir-dba4c.firebasestorage.app",
+      messagingSenderId: "160255207915",
+      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
+      measurementId: "G-GYPNMR85G2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location.href = "index.html";
+
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        document.getElementById("botStatus").textContent = data.botActive ? "✅ شغال" : "❌ متوقف";
+        const groups = data.subscription?.groups || [];
+        document.getElementById("groupCount").textContent = groups.length;
+        document.getElementById("groupList").textContent = groups.join(", ");
+      }
+    });
+
+    window.goBack = () => { window.location.href = "profile.html"; }
+  </script>
+</head>
+<body>
+  <div class="card">
+    <h2>بيانات البوت</h2>
+    <p><strong>حالة البوت:</strong> <span id="botStatus">جار التحميل...</span></p>
+    <p><strong>عدد الجروبات المشترك فيها:</strong> <span id="groupCount">جار التحميل...</span></p>
+    <p><strong>الجروبات:</strong> <span id="groupList">جار التحميل...</span></p>
+
+    <button onclick="goBack()" style="padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:20px;">
+      رجوع إلى الملف الشخصي
+    </button>
+  </div>
+</body>
+</html>
