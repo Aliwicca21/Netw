@@ -3,95 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <title>بيانات البوت</title>
-  <link rel="stylesheet" href="auth.css">
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      direction: rtl;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    p {
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    strong {
+      color: #0070ba;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 18px;
+      background: #0070ba;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: #005c94;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📊 بيانات البوت</h2>
+    <p><strong>اسم البوت:</strong> <span id="bot-name">جار التحميل...</span></p>
+    <p><strong>عدد المستخدمين:</strong> <span id="users-count">جار التحميل...</span></p>
+    <p><strong>عدد الطلبات:</strong> <span id="requests">جار التحميل...</span></p>
+    <p><strong>الحالة:</strong> <span id="status">جار التحميل...</span></p>
+    
+    <a href="profile.html" class="btn">↩️ رجوع للملف الشخصي</a>
+  </div>
 
+  <!-- Firebase SDKs -->
+  <script type="module">
+    // استيراد Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-analytics.js";
+
+    // إعدادات Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
       authDomain: "fir-dba4c.firebaseapp.com",
+      databaseURL: "https://fir-dba4c-default-rtdb.firebaseio.com",
       projectId: "fir-dba4c",
-      storageBucket: "fir-dba4c.firebasestorage.app",
+      storageBucket: "fir-dba4c.appspot.com",
       messagingSenderId: "160255207915",
       appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
       measurementId: "G-GYPNMR85G2"
     };
 
+    // تهيئة Firebase
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    let currentUser = null;
+    const analytics = getAnalytics(app);
+    const db = getDatabase(app);
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        loadBotDataRealtime();
-      } else {
-        window.location.href = "index.html";
+    // الإشارة لمكان البيانات في الـ Realtime Database
+    const botRef = ref(db, 'botData'); // مثلاً اجعل البنية بهذا الشكل في Firebase:
+    /*
+      botData: {
+        name: "VideoSaver Bot",
+        users: 542,
+        requests: 1987,
+        status: true
       }
+    */
+
+    // قراءة البيانات وتحديث الصفحة تلقائيًا
+    onValue(botRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        document.getElementById("bot-name").textContent = data.name;
+        document.getElementById("users-count").textContent = data.users;
+        document.getElementById("requests").textContent = data.requests;
+        document.getElementById("status").textContent = data.status ? "✅ يعمل الآن" : "❌ متوقف";
+      }
+    }, (error) => {
+      console.error("فشل تحميل البيانات من Firebase:", error);
     });
-
-    function loadBotDataRealtime() {
-      const docRef = doc(db, "users", currentUser.uid);
-      onSnapshot(docRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-
-          document.getElementById("bot-ip").textContent = data.telegramIP || "غير متوفر";
-          document.getElementById("bot-groups").textContent = (data.subscription?.groups?.length) || 0;
-          document.getElementById("bot-status").textContent = data.botActive ? "✅ شغال" : "❌ متوقف";
-
-          // عرض تاريخ أول اشتراك
-          document.getElementById("bot-start-date").textContent = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : "غير متوفر";
-
-          // عرض تاريخ التجديد القادم (subscription)
-          document.getElementById("bot-next-renewal").textContent = data.subscription ? new Date(data.subscription).toLocaleDateString() : "غير متوفر";
-
-          // عداد وقت تشغيل البوت
-          if (data.botActive) {
-            const botStartTime = new Date(data.botActiveSince || data.createdAt); // إذا فيه وقت بدء مخصص
-            updateBotTimer(botStartTime);
-          } else {
-            document.getElementById("bot-timer").textContent = "❌ البوت متوقف";
-          }
-        }
-      });
-    }
-
-    function updateBotTimer(startTime) {
-      const timerElement = document.getElementById("bot-timer");
-      function refreshTimer() {
-        const now = new Date();
-        let diff = now - new Date(startTime);
-        let hours = Math.floor(diff / (1000 * 60 * 60));
-        let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        let seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        timerElement.textContent = `${hours} س : ${minutes} د : ${seconds} ث`;
-      }
-      refreshTimer();
-      setInterval(refreshTimer, 1000);
-    }
-
-    window.goBackProfile = function() {
-      window.location.href = "profile.html";
-    }
   </script>
-</head>
-<body>
-  <div class="card">
-    <h2>بيانات البوت</h2>
-    <p><strong>IP الحساب على تيليجرام:</strong> <span id="bot-ip">جار التحميل...</span></p>
-    <p><strong>عدد الجروبات المفعل فيها:</strong> <span id="bot-groups">جار التحميل...</span></p>
-    <p><strong>حالة البوت:</strong> <span id="bot-status">جار التحميل...</span></p>
-    <p><strong>وقت تشغيل البوت:</strong> <span id="bot-timer">جار التحميل...</span></p>
-    <p><strong>تاريخ أول اشتراك:</strong> <span id="bot-start-date">جار التحميل...</span></p>
-    <p><strong>تاريخ التجديد القادم:</strong> <span id="bot-next-renewal">جار التحميل...</span></p>
-
-    <button onclick="goBackProfile()" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer;">
-      رجوع للملف الشخصي
-    </button>
-  </div>
 </body>
 </html>
