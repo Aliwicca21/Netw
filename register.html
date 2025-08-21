@@ -6,9 +6,13 @@
   <link rel="stylesheet" href="auth.css">
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { 
+      getAuth, createUserWithEmailAndPassword, 
+      RecaptchaVerifier, signInWithPhoneNumber 
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
+    // 🔹 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
       authDomain: "fir-dba4c.firebaseapp.com",
@@ -19,70 +23,81 @@
       measurementId: "G-GYPNMR85G2"
     };
 
+    // 🔹 تهيئة Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const countries = [
-      { name: "مصر", code: "+20" }, { name: "السعودية", code: "+966" }, { name: "الإمارات", code: "+971" },
-      { name: "قطر", code: "+974" }, { name: "الكويت", code: "+965" }, { name: "البحرين", code: "+973" },
-      { name: "عمان", code: "+968" }, { name: "الأردن", code: "+962" }, { name: "لبنان", code: "+961" },
-      { name: "سوريا", code: "+963" }, { name: "العراق", code: "+964" }, { name: "المغرب", code: "+212" },
-      { name: "الجزائر", code: "+213" }, { name: "تونس", code: "+216" }, { name: "ليبيا", code: "+218" },
-      { name: "السودان", code: "+249" }, { name: "اليمن", code: "+967" }, { name: "فلسطين", code: "+970" },
-      { name: "الأرجنتين", code: "+54" }, { name: "البرازيل", code: "+55" }, { name: "كندا", code: "+1" },
-      { name: "الولايات المتحدة", code: "+1" }, { name: "المكسيك", code: "+52" }, { name: "فرنسا", code: "+33" },
-      { name: "ألمانيا", code: "+49" }, { name: "إيطاليا", code: "+39" }, { name: "إسبانيا", code: "+34" },
-      { name: "المملكة المتحدة", code: "+44" }, { name: "روسيا", code: "+7" }, { name: "أوكرانيا", code: "+380" },
-      { name: "الهند", code: "+91" }, { name: "باكستان", code: "+92" }, { name: "الصين", code: "+86" },
-      { name: "اليابان", code: "+81" }, { name: "كوريا الجنوبية", code: "+82" }, { name: "تركيا", code: "+90" },
-      { name: "إندونيسيا", code: "+62" }, { name: "ماليزيا", code: "+60" }, { name: "تايلاند", code: "+66" },
-      { name: "سنغافورة", code: "+65" }, { name: "أستراليا", code: "+61" }, { name: "نيوزيلندا", code: "+64" },
-      { name: "كينيا", code: "+254" }, { name: "نيجيريا", code: "+234" }, { name: "جنوب أفريقيا", code: "+27" },
-      { name: "إثيوبيا", code: "+251" }, { name: "غانا", code: "+233" }, { name: "النرويج", code: "+47" },
-      { name: "السويد", code: "+46" }, { name: "فنلندا", code: "+358" }, { name: "بولندا", code: "+48" }
-    ];
+    // 🔹 إنشاء reCAPTCHA
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+      size: "invisible"
+    });
 
+    // 🔹 تسجيل المستخدم
     window.signupUser = async function() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
+      const countryCode = document.getElementById("countryCode").value.trim();
       const phone = document.getElementById("phone").value.trim();
       const username = document.getElementById("username").value.trim();
       const fullname = document.getElementById("fullname").value.trim();
       const birthdate = document.getElementById("birthdate").value;
-      const countryIndex = document.getElementById("country").selectedIndex - 1;
 
-      if (!email || !password || !phone || !username || !fullname || !birthdate || countryIndex < 0) {
+      if (!email || !password || !phone || !username || !fullname || !birthdate || !countryCode) {
         return alert("جميع الحقول مطلوبة!");
       }
 
-      const country = countries[countryIndex];
       const phoneDigits = phone.replace(/\D/g, '');
       if(phoneDigits.length < 5) {
-        return alert(`رقم الهاتف غير صحيح لدولة ${country.name}`);
+        return alert("رقم الهاتف غير صحيح!");
       }
 
-      const fullPhone = `${country.code}${phoneDigits}`;
+      const fullPhone = `+${countryCode}${phoneDigits}`;
 
       try {
+        // 🔹 إنشاء حساب بالبريد وكلمة المرور
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const uid = userCredential.user.uid;
 
+        // 🔹 إرسال SMS للتأكيد
+        const confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
+        window.confirmationResult = confirmationResult;
+
+        // حفظ البيانات في Firestore (بدون توثيق الهاتف لسه)
         await setDoc(doc(db, "users", uid), {
           email,
           phone: fullPhone,
           username,
           fullname,
           birthdate,
-          country: `${country.name} (${country.code})`,
           balance: 0,
-          subscription: null
+          subscription: null,
+          phoneVerified: false
         });
 
-        alert("تم إنشاء الحساب بنجاح ✅");
-        window.location.href = "index.html";
+        document.getElementById("verifySection").style.display = "block";
+        alert("تم إرسال رمز التحقق على هاتفك 📲");
       } catch (error) {
         alert("حدث خطأ: " + error.message);
+      }
+    }
+
+    // 🔹 التحقق من رمز SMS
+    window.verifyCode = async function() {
+      const code = document.getElementById("verificationCode").value.trim();
+      if (!code) return alert("أدخل رمز التحقق!");
+
+      try {
+        const result = await window.confirmationResult.confirm(code);
+        const uid = result.user.uid;
+
+        // تحديث حالة التوثيق في Firestore
+        await setDoc(doc(db, "users", uid), { phoneVerified: true }, { merge: true });
+
+        alert("✅ تم تأكيد رقم الهاتف بنجاح");
+        window.location.href = "index.html";
+      } catch (error) {
+        alert("❌ رمز التحقق غير صحيح");
       }
     }
 
@@ -101,11 +116,8 @@
       <label>كلمة المرور:</label>
       <input type="password" id="password" required>
 
-      <label>الدولة:</label>
-      <select id="country" required>
-        <option value="">اختر الدولة</option>
-        ${countries.map(c => `<option value="${c.code}">${c.name} (${c.code})</option>`).join('')}
-      </select>
+      <label>رمز الدولة (مثال: 20 لمصر):</label>
+      <input type="text" id="countryCode" placeholder="مثال: 20" required>
 
       <label>رقم الهاتف:</label>
       <input type="text" id="phone" placeholder="أدخل رقم الهاتف" required>
@@ -119,10 +131,21 @@
       <label>تاريخ الميلاد:</label>
       <input type="date" id="birthdate" required>
 
+      <div id="recaptcha-container"></div>
+
       <button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
         إنشاء الحساب
       </button>
     </form>
+
+    <!-- إدخال رمز التحقق -->
+    <div id="verifySection" style="display:none; margin-top:20px;">
+      <label>أدخل رمز التحقق (SMS):</label>
+      <input type="text" id="verificationCode" placeholder="XXXXXX">
+      <button onclick="verifyCode()" style="padding:10px 20px; background-color:green; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
+        تأكيد الرمز
+      </button>
+    </div>
 
     <button onclick="goToLogin()" style="margin-top:10px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
       لديك حساب؟ تسجيل الدخول
