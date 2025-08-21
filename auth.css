@@ -1,13 +1,9 @@
-/* ===== Reset ===== */
-* {
+/* ========== الأساسيات ========== */
+body {
+  font-family: "Tahoma", Arial, sans-serif;
+  background: linear-gradient(135deg, #0070ba, #00b4d8);
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  font-family: "Cairo", sans-serif;
-}
-
-body {
-  background: linear-gradient(135deg, #0070ba, #00c6ff);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,110 +11,109 @@ body {
   direction: rtl;
 }
 
-/* ===== Card ===== */
+/* ========== البطاقة الرئيسية ========== */
 .card {
   background: #fff;
   padding: 30px;
   border-radius: 20px;
+  box-shadow: 0px 8px 25px rgba(0,0,0,0.15);
   width: 380px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   text-align: center;
-  animation: fadeIn 0.7s ease;
+  animation: fadeIn 1s ease-in-out;
 }
 
+/* ========== العنوان ========== */
 .card h2 {
   margin-bottom: 20px;
-  font-size: 1.6rem;
+  font-size: 24px;
   color: #0070ba;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
+
 .card h2::before {
-  content: "✨";
-}
-.card h2::after {
-  content: "🔐";
+  content: "📝";
+  font-size: 26px;
 }
 
-/* ===== Labels & Inputs ===== */
-form label {
-  display: block;
+/* ========== الفورم ========== */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+label {
   text-align: right;
-  margin: 10px 0 5px;
-  font-size: 0.95rem;
   font-weight: bold;
   color: #333;
+  margin-bottom: 5px;
 }
 
-/* تغليف الـ input مع الإيموجي */
-.input-group {
-  position: relative;
-  margin-bottom: 15px;
-}
-
-.input-group span {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.2rem;
-  pointer-events: none;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 10px 40px 10px 10px; /* مساحة للإيموجي */
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-}
-
-.input-group input:focus {
-  border-color: #0070ba;
-  outline: none;
-  box-shadow: 0 0 5px rgba(0, 112, 186, 0.5);
-}
-
-/* ===== Buttons ===== */
-button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 15px;
-  font-size: 1rem;
-  font-weight: bold;
-  border: none;
+input, select {
+  padding: 10px;
+  border: 1.5px solid #ddd;
   border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+input:focus, select:focus {
+  border-color: #0070ba;
+  box-shadow: 0px 0px 5px rgba(0,112,186,0.5);
+}
+
+/* ========== الأزرار ========== */
+button {
+  font-size: 15px;
+  font-weight: bold;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
-  transition: 0.3s ease;
+  transition: 0.3s;
 }
 
 button[type="submit"] {
   background: #0070ba;
   color: white;
-}
-button[type="submit"]::before {
-  content: "✅ ";
-}
-button[type="submit"]:hover {
-  background: #005f9e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
 }
 
-button:not([type="submit"]) {
+button[type="submit"]::before {
+  content: "✅";
+}
+
+button[type="submit"]:hover {
+  background: #005c99;
+}
+
+.card > button {
   background: #666;
-  color: #fff;
+  color: white;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
 }
-button:not([type="submit"])::before {
-  content: "🔄 ";
+
+.card > button::before {
+  content: "🔑";
 }
-button:not([type="submit"]):hover {
+
+.card > button:hover {
   background: #444;
 }
 
-/* ===== Animations ===== */
+/* ========== أنيميشن ========== */
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
