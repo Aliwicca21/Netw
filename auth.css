@@ -1,104 +1,124 @@
-/* ====== Reset بسيط ====== */
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body {
+/* ===== Reset ===== */
+* {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Cairo", sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #0070ba, #00c6ff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
   direction: rtl;
-  background: #f6f7fb;
-  display: grid;
-  place-items: center;           /* وسط الصفحة */
-  padding: 16px;
-  color: #111827;
 }
 
-/* ====== كرت/حاوية (اختياري) ======
-   لو حاطط العناصر داخل <div class="card"> هتظهر بشكل أجمل.
-   لو مش موجودة، مافيش مشكلة – التنسيقات العامة تحت هتغطي.
-*/
+/* ===== Card ===== */
 .card {
-  width: 100%;
-  max-width: 420px;
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.08);
-  padding: 24px;
+  padding: 30px;
+  border-radius: 20px;
+  width: 380px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  animation: fadeIn 0.7s ease;
 }
 
-/* لو مافيش .card، خلّي العناصر تاخد عرض مناسب */
-body > h2,
-body > input,
-body > button,
-body > p {
-  width: min(100%, 420px);
+.card h2 {
+  margin-bottom: 20px;
+  font-size: 1.6rem;
+  color: #0070ba;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.card h2::before {
+  content: "✨";
+}
+.card h2::after {
+  content: "🔐";
 }
 
-/* ====== العناوين ====== */
-h2 {
-  margin: 0 0 12px 0;
-  font-size: 22px;
-  font-weight: 700;
+/* ===== Labels & Inputs ===== */
+form label {
+  display: block;
+  text-align: right;
+  margin: 10px 0 5px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #333;
 }
 
-/* ====== الحقول ====== */
-input {
+/* تغليف الـ input مع الإيموجي */
+.input-group {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.input-group span {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  pointer-events: none;
+}
+
+.input-group input {
   width: 100%;
-  padding: 12px 14px;
-  margin: 8px 0;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  padding: 10px 40px 10px 10px; /* مساحة للإيموجي */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+  border-color: #0070ba;
   outline: none;
-  background: #fff;
-  transition: border-color .15s, box-shadow .15s;
-}
-input::placeholder { color: #9ca3af; }
-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+  box-shadow: 0 0 5px rgba(0, 112, 186, 0.5);
 }
 
-/* ====== الأزرار ====== */
+/* ===== Buttons ===== */
 button {
   width: 100%;
-  padding: 12px 14px;
-  margin-top: 8px;
-  border: 0;
-  border-radius: 12px;
-  background: #111827;
-  color: #fff;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 600;
-  transition: transform .05s ease, opacity .2s ease;
-}
-button:hover { opacity: .96; }
-button:active { transform: translateY(1px); }
-button[disabled] { opacity: .6; cursor: not-allowed; }
-
-/* زر مفرغ (لو احتجته لاحقًا) */
-.btn-outline {
-  background: #fff;
-  color: #111827;
-  border: 1px solid #e5e7eb;
-}
-
-/* ====== الروابط ====== */
-p { margin: 10px 0 0; font-size: 14px; color: #374151; }
-a { color: #2563eb; text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-/* ====== رسائل صغيرة (لو احتجت تعرض خطأ/نجاح) ====== */
-.notice {
-  font-size: 13px;
-  padding: 10px 12px;
+  padding: 12px;
+  margin-top: 15px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
   border-radius: 10px;
-  margin: 8px 0;
+  cursor: pointer;
+  transition: 0.3s ease;
 }
-.notice.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-.notice.error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 
-/* ====== استجابة للشاشات الصغيرة ====== */
-@media (max-width: 420px) {
-  .card { padding: 18px; border-radius: 14px; }
-  h2 { font-size: 20px; }
+button[type="submit"] {
+  background: #0070ba;
+  color: white;
+}
+button[type="submit"]::before {
+  content: "✅ ";
+}
+button[type="submit"]:hover {
+  background: #005f9e;
+}
+
+button:not([type="submit"]) {
+  background: #666;
+  color: #fff;
+}
+button:not([type="submit"])::before {
+  content: "🔄 ";
+}
+button:not([type="submit"]):hover {
+  background: #444;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
