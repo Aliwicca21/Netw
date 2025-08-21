@@ -40,7 +40,7 @@ window.loginUser = async function() {
       const docSnap = await getDoc(doc(db, "users", user.uid));
       if(docSnap.exists()) {
         alert("تم تسجيل الدخول بنجاح ✅");
-        window.location.href = "home.html"; // الصفحة الرئيسية بعد تسجيل الدخول
+        window.location.href = "profile.html"; // الصفحة الرئيسية بعد تسجيل الدخول
       } else {
         alert("الحساب غير موجود في قاعدة البيانات.");
         await auth.signOut();
