@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="auth.css">
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -24,52 +24,45 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 window.signupUser = async function() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const phone = document.getElementById("phone").value.trim();
-  const username = document.getElementById("username").value.trim();
-  const fullname = document.getElementById("fullname").value.trim();
-  const birthdate = document.getElementById("birthdate").value;
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const phone = document.getElementById("phone").value.trim();
+    const username = document.getElementById("username").value.trim();
+    const fullname = document.getElementById("fullname").value.trim();
+    const birthdate = document.getElementById("birthdate").value;
 
-  if (!email || !password || !phone || !username || !fullname || !birthdate) {
-    return alert("جميع الحقول مطلوبة!");
-  }
+    if(!email || !password || !phone || !username || !fullname || !birthdate){
+        return alert("جميع الحقول مطلوبة!");
+    }
 
-  if(!phone.startsWith("+") || phone.replace(/\D/g,'').length < 5){
-    return alert("رقم الهاتف غير صحيح. يجب كتابة رمز الدولة ورقم الهاتف كاملًا.");
-  }
+    if(!phone.startsWith("+") || phone.replace(/\D/g,'').length < 5){
+        return alert("رقم الهاتف غير صحيح. يجب كتابة رمز الدولة ورقم الهاتف كاملًا.");
+    }
 
-  try {
-    // إنشاء الحساب
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-    // حفظ بيانات المستخدم في Firestore
-    await setDoc(doc(db, "users", user.uid), {
-      email,
-      phone,
-      username,
-      fullname,
-      birthdate,
-      balance: 0,
-      subscription: null
-    });
+        await setDoc(doc(db, "users", user.uid), {
+            email,
+            phone,
+            username,
+            fullname,
+            birthdate,
+            balance: 0,
+            subscription: null
+        });
 
-    // إرسال رابط تفعيل البريد فقط
-    await sendEmailVerification(user);
+        alert("تم إنشاء الحساب بنجاح ✅ يمكنك تسجيل الدخول مباشرة.");
+        window.location.href = "index.html";
 
-    alert("تم إنشاء الحساب ✅\nيرجى التحقق من بريدك الإلكتروني والضغط على رابط التفعيل قبل تسجيل الدخول.");
-
-    // تسجيل خروج المستخدم مؤقتاً حتى يضغط رابط التفعيل
-    await signOut(auth);
-
-  } catch (error) {
-    alert("حدث خطأ: " + error.message);
-  }
+    } catch(error){
+        alert("حدث خطأ: " + error.message);
+    }
 }
 
-window.goToLogin = function() {
-  window.location.href = "index.html";
+window.goToLogin = function(){
+    window.location.href = "index.html";
 }
 </script>
 </head>
@@ -77,33 +70,15 @@ window.goToLogin = function() {
 <div class="card">
 <h2>إنشاء حساب جديد</h2>
 <form onsubmit="event.preventDefault(); signupUser();">
-<label>البريد الإلكتروني:</label>
-<input type="email" id="email" required>
-
-<label>كلمة المرور:</label>
-<input type="password" id="password" required>
-
-<label>رقم الهاتف (مع رمز الدولة):</label>
-<input type="text" id="phone" placeholder="+20123456789" required>
-
-<label>اسم المستخدم:</label>
-<input type="text" id="username" required>
-
-<label>الاسم الكامل:</label>
-<input type="text" id="fullname" required>
-
-<label>تاريخ الميلاد:</label>
+<input type="email" id="email" placeholder="البريد الإلكتروني" required>
+<input type="password" id="password" placeholder="كلمة المرور" required>
+<input type="text" id="phone" placeholder="+20123456789 رقم الهاتف" required>
+<input type="text" id="username" placeholder="اسم المستخدم" required>
+<input type="text" id="fullname" placeholder="الاسم الكامل" required>
 <input type="date" id="birthdate" required>
-
-<button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
-إنشاء الحساب
-</button>
+<button type="submit">إنشاء الحساب</button>
 </form>
-
-<button onclick="goToLogin()" style="margin-top:10px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
-لديك حساب؟ تسجيل الدخول
-</button>
+<button class="secondary small" onclick="goToLogin()">لديك حساب؟ تسجيل الدخول</button>
 </div>
 </body>
-</html></body>
 </html>
