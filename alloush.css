@@ -1,0 +1,110 @@
+/* ===== إعدادات أساسية ===== */
+body {
+  font-family: "Cairo", "Tahoma", sans-serif;
+  background: linear-gradient(135deg, #00c6ff, #0070ba);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* ===== الكارد ===== */
+.card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  width: 400px;
+  text-align: center;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+/* ===== العنوان ===== */
+.card h2 {
+  color: #0070ba;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.card h2::before {
+  content: "🔑 ";
+}
+
+/* ===== الإدخالات ===== */
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px 10px;
+  margin: 8px 0 15px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+input:focus {
+  border-color: #0070ba;
+  box-shadow: 0 0 5px rgba(0,112,186,0.5);
+  outline: none;
+}
+
+/* ===== الأزرار ===== */
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+button:hover {
+  transform: scale(1.05);
+  opacity: 0.95;
+}
+
+/* ألوان الأزرار */
+button[type="submit"] {
+  background-color: #0070ba;
+  color: white;
+}
+
+button[type="submit"]::before {
+  content: "✅ ";
+}
+
+.card button:nth-of-type(2) {
+  background-color: gray;
+  color: white;
+}
+
+.card button:nth-of-type(2)::before {
+  content: "✉️ ";
+}
+
+/* ===== النصوص ===== */
+label {
+  display: block;
+  text-align: right;
+  font-weight: bold;
+  color: #0070ba;
+  margin-bottom: 5px;
+}
+
+/* ===== تأثير الدخول ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
