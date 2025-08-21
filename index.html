@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="alloush.css">
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -36,23 +36,34 @@ window.loginUser = async function() {
     const user = userCredential.user;
 
     if(user.emailVerified) {
-      // تحقق من Firestore إذا الحساب مفعل (isVerified)
+      // تحقق من Firestore إذا الحساب مفعل
       const docSnap = await getDoc(doc(db, "users", user.uid));
-      if(docSnap.exists() && docSnap.data().isVerified) {
+      if(docSnap.exists()) {
         alert("تم تسجيل الدخول بنجاح ✅");
-        // هنا يمكنك توجيه المستخدم للصفحة الرئيسية
-        window.location.href = "home.html"; 
+        window.location.href = "home.html"; // الصفحة الرئيسية بعد تسجيل الدخول
       } else {
-        alert("الحساب لم يتم تفعيله بعد في قاعدة البيانات. يرجى تفعيل البريد.");
+        alert("الحساب غير موجود في قاعدة البيانات.");
         await auth.signOut();
       }
     } else {
-      alert("لم يتم تفعيل بريدك الإلكتروني بعد. يرجى التحقق من البريد والضغط على رابط التفعيل.");
+      alert("لم يتم تفعيل بريدك الإلكتروني بعد. يرجى الضغط على رابط التفعيل في البريد.");
       await auth.signOut();
     }
 
   } catch (error) {
     alert("حدث خطأ: " + error.message);
+  }
+}
+
+window.forgotPassword = async function() {
+  const email = prompt("أدخل بريدك الإلكتروني لاستعادة كلمة المرور:");
+  if(email) {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.");
+    } catch (error) {
+      alert("حدث خطأ: " + error.message);
+    }
   }
 }
 
@@ -75,6 +86,10 @@ window.goToSignup = function() {
 تسجيل الدخول
 </button>
 </form>
+
+<button onclick="forgotPassword()" style="margin-top:10px; padding:8px 16px; background-color:orange; color:white; border:none; border-radius:5px; cursor:pointer;">
+نسيت كلمة المرور؟
+</button>
 
 <button onclick="goToSignup()" style="margin-top:10px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
 ليس لديك حساب؟ إنشاء حساب
