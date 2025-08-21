@@ -1,66 +1,84 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>تسجيل الدخول</title>
-  <link rel="stylesheet" href="alloush.css">
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+<meta charset="UTF-8">
+<title>تسجيل الدخول</title>
+<link rel="stylesheet" href="alloush.css">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
-      authDomain: "fir-dba4c.firebaseapp.com",
-      projectId: "fir-dba4c",
-      storageBucket: "fir-dba4c.firebasestorage.app",
-      messagingSenderId: "160255207915",
-      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
-      measurementId: "G-GYPNMR85G2"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+  authDomain: "fir-dba4c.firebaseapp.com",
+  projectId: "fir-dba4c",
+  storageBucket: "fir-dba4c.firebasestorage.app",
+  messagingSenderId: "160255207915",
+  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
+  measurementId: "G-GYPNMR85G2"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    window.loginUser = async function() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+window.loginUser = async function() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
-      if (!email || !password) {
-        return alert("الرجاء إدخال البريد الإلكتروني وكلمة المرور");
+  if(!email || !password) {
+    return alert("يرجى إدخال البريد الإلكتروني وكلمة المرور.");
+  }
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    if(user.emailVerified) {
+      // تحقق من Firestore إذا الحساب مفعل (isVerified)
+      const docSnap = await getDoc(doc(db, "users", user.uid));
+      if(docSnap.exists() && docSnap.data().isVerified) {
+        alert("تم تسجيل الدخول بنجاح ✅");
+        // هنا يمكنك توجيه المستخدم للصفحة الرئيسية
+        window.location.href = "home.html"; 
+      } else {
+        alert("الحساب لم يتم تفعيله بعد في قاعدة البيانات. يرجى تفعيل البريد.");
+        await auth.signOut();
       }
-
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("تم تسجيل الدخول ✅");
-        window.location.href = "profile.html"; // تحويل للملف الشخصي
-      } catch (error) {
-        alert("خطأ في تسجيل الدخول: " + error.message);
-      }
+    } else {
+      alert("لم يتم تفعيل بريدك الإلكتروني بعد. يرجى التحقق من البريد والضغط على رابط التفعيل.");
+      await auth.signOut();
     }
 
-    window.goToSignup = function() {
-      window.location.href = "register.html";
-    }
-  </script>
+  } catch (error) {
+    alert("حدث خطأ: " + error.message);
+  }
+}
+
+window.goToSignup = function() {
+  window.location.href = "signup.html";
+}
+</script>
 </head>
 <body>
-  <div class="card">
-    <h2>تسجيل الدخول</h2>
-    <form onsubmit="event.preventDefault(); loginUser();">
-      <label>البريد الإلكتروني:</label>
-      <input type="email" id="email" required>
+<div class="card">
+<h2>تسجيل الدخول</h2>
+<form onsubmit="event.preventDefault(); loginUser();">
+<label>البريد الإلكتروني:</label>
+<input type="email" id="email" required>
 
-      <label>كلمة المرور:</label>
-      <input type="password" id="password" required>
+<label>كلمة المرور:</label>
+<input type="password" id="password" required>
 
-      <button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
-        تسجيل الدخول
-      </button>
-    </form>
+<button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
+تسجيل الدخول
+</button>
+</form>
 
-    <button onclick="goToSignup()" style="margin-top:10px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
-      ليس لديك حساب؟ إنشاء حساب
-    </button>
-  </div>
+<button onclick="goToSignup()" style="margin-top:10px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
+ليس لديك حساب؟ إنشاء حساب
+</button>
+</div>
 </body>
 </html>
