@@ -1,45 +1,93 @@
-
+/* ===== إعدادات أساسية للصفحة ===== */
 body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      direction: rtl;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: 30px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #333;
-    }
-    p {
-      margin: 8px 0;
-      font-size: 16px;
-    }
-    strong {
-      color: #0070ba;
-    }
-    .btn {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 10px 18px;
-      background: #0070ba;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .btn:hover {
-      background: #005c94;
-    }
-  </style>
-</head>
-<body>
+  font-family: "Cairo", "Tahoma", sans-serif;
+  background: linear-gradient(135deg, #0070ba, #00c6ff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  direction: rtl;
+}
+
+/* ===== الكارت ===== */
+.card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  width: 420px;
+  text-align: right;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+/* ===== العنوان ===== */
+.card h2 {
+  margin-bottom: 20px;
+  color: #0070ba;
+  font-size: 24px;
+  text-align: center;
+}
+
+/* ===== النصوص ===== */
+.card p {
+  margin: 14px 0;
+  font-size: 17px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card strong {
+  color: #0070ba;
+  min-width: 190px;
+  display: inline-block;
+}
+
+/* ===== أيقونات تلقائية عبر الـ CSS ===== */
+#bot-ip::before {
+  content: "🌐 ";
+}
+
+#bot-groups::before {
+  content: "👥 ";
+}
+
+#bot-status::before {
+  content: "⚙️ ";
+}
+
+#bot-timer::before {
+  content: "🕒 ";
+}
+
+/* ===== الزر ===== */
+.card button {
+  width: 100%;
+  padding: 12px 0;
+  background: #0070ba;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.card button:hover {
+  background: #005b94;
+  transform: scale(1.03);
+}
+
+/* ===== تأثير الدخول ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
