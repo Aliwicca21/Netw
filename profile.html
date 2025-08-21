@@ -107,7 +107,6 @@
         document.getElementById("end-date").textContent = data.endDate || "غير محدد";  
         document.getElementById("bot-status").textContent = data.botActive ? "✅ شغال" : "❌ متوقف";  
 
-        // صورة المستخدم
         document.getElementById("profile-pic").src = data.photoURL || "https://via.placeholder.com/120";  
       }  
     }  
@@ -129,16 +128,17 @@
       window.history.back();
     }
 
-    // أزرار الاشتراك
+    // تعديل وظائف الاشتراك لتوجيه المستخدم لصفحة recharge.html
     window.renewSub = function(months) {
-      alert("تم تجديد الاشتراك لـ " + months + " أشهر ✅");
+      window.location.href = "recharge.html?months=" + months;
     }
+
     window.cancelSub = function() {
-      alert("تم إلغاء الاشتراك ❌");
+      window.location.href = "recharge.html?cancel=true";
     }
-    window.goToRecharge = function() {
-  window.location.href = "recharge.html"
-      alert("تم شحن الرصيد ✅");
+
+    window.recharge = function() {
+      window.location.href = "recharge.html";
     }
   </script>
 </head>
