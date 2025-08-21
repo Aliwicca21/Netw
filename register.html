@@ -6,13 +6,9 @@
   <link rel="stylesheet" href="auth.css">
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { 
-      getAuth, createUserWithEmailAndPassword, 
-      RecaptchaVerifier, signInWithPhoneNumber 
-    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-    // 🔹 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
       authDomain: "fir-dba4c.firebaseapp.com",
@@ -23,81 +19,50 @@
       measurementId: "G-GYPNMR85G2"
     };
 
-    // 🔹 تهيئة Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // 🔹 إنشاء reCAPTCHA
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-      size: "invisible"
-    });
-
-    // 🔹 تسجيل المستخدم
     window.signupUser = async function() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-      const countryCode = document.getElementById("countryCode").value.trim();
       const phone = document.getElementById("phone").value.trim();
       const username = document.getElementById("username").value.trim();
       const fullname = document.getElementById("fullname").value.trim();
       const birthdate = document.getElementById("birthdate").value;
 
-      if (!email || !password || !phone || !username || !fullname || !birthdate || !countryCode) {
+      if (!email || !password || !phone || !username || !fullname || !birthdate) {
         return alert("جميع الحقول مطلوبة!");
       }
 
+      // التحقق من صحة رقم الهاتف (على الأقل 5 أرقام بعد رمز الدولة)
       const phoneDigits = phone.replace(/\D/g, '');
-      if(phoneDigits.length < 5) {
-        return alert("رقم الهاتف غير صحيح!");
+      if (phoneDigits.length < 5) {
+        return alert("رقم الهاتف غير صحيح. يجب كتابة رمز الدولة ورقم الهاتف كاملًا.");
       }
 
-      const fullPhone = `+${countryCode}${phoneDigits}`;
-
       try {
-        // 🔹 إنشاء حساب بالبريد وكلمة المرور
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const uid = userCredential.user.uid;
 
-        // 🔹 إرسال SMS للتأكيد
-        const confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
-        window.confirmationResult = confirmationResult;
-
-        // حفظ البيانات في Firestore (بدون توثيق الهاتف لسه)
+        // حفظ بيانات المستخدم في Firestore
         await setDoc(doc(db, "users", uid), {
           email,
-          phone: fullPhone,
+          phone,
           username,
           fullname,
           birthdate,
           balance: 0,
-          subscription: null,
-          phoneVerified: false
+          subscription: null
         });
 
-        document.getElementById("verifySection").style.display = "block";
-        alert("تم إرسال رمز التحقق على هاتفك 📲");
-      } catch (error) {
-        alert("حدث خطأ: " + error.message);
-      }
-    }
+        // إرسال رسالة تأكيد البريد الإلكتروني
+        await sendEmailVerification(userCredential.user);
 
-    // 🔹 التحقق من رمز SMS
-    window.verifyCode = async function() {
-      const code = document.getElementById("verificationCode").value.trim();
-      if (!code) return alert("أدخل رمز التحقق!");
-
-      try {
-        const result = await window.confirmationResult.confirm(code);
-        const uid = result.user.uid;
-
-        // تحديث حالة التوثيق في Firestore
-        await setDoc(doc(db, "users", uid), { phoneVerified: true }, { merge: true });
-
-        alert("✅ تم تأكيد رقم الهاتف بنجاح");
+        alert("تم إنشاء الحساب بنجاح ✅\nيرجى التحقق من بريدك الإلكتروني لتأكيد الحساب.");
         window.location.href = "index.html";
       } catch (error) {
-        alert("❌ رمز التحقق غير صحيح");
+        alert("حدث خطأ: " + error.message);
       }
     }
 
@@ -116,11 +81,8 @@
       <label>كلمة المرور:</label>
       <input type="password" id="password" required>
 
-      <label>رمز الدولة (مثال: 20 لمصر):</label>
-      <input type="text" id="countryCode" placeholder="مثال: 20" required>
-
-      <label>رقم الهاتف:</label>
-      <input type="text" id="phone" placeholder="أدخل رقم الهاتف" required>
+      <label>رقم الهاتف (مع رمز الدولة):</label>
+      <input type="text" id="phone" placeholder="+20123456789" required>
 
       <label>اسم المستخدم:</label>
       <input type="text" id="username" required>
@@ -131,21 +93,10 @@
       <label>تاريخ الميلاد:</label>
       <input type="date" id="birthdate" required>
 
-      <div id="recaptcha-container"></div>
-
       <button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
         إنشاء الحساب
       </button>
     </form>
-
-    <!-- إدخال رمز التحقق -->
-    <div id="verifySection" style="display:none; margin-top:20px;">
-      <label>أدخل رمز التحقق (SMS):</label>
-      <input type="text" id="verificationCode" placeholder="XXXXXX">
-      <button onclick="verifyCode()" style="padding:10px 20px; background-color:green; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
-        تأكيد الرمز
-      </button>
-    </div>
 
     <button onclick="goToLogin()" style="margin-top:10px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
       لديك حساب؟ تسجيل الدخول
