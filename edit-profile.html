@@ -36,6 +36,15 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+    .profile-preview {
+      display: block;
+      margin: 10px auto;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #0070ba;
+    }
     .btn {
       display: inline-block;
       margin: 5px 3px;
@@ -44,6 +53,7 @@
       border-radius: 6px;
       cursor: pointer;
       font-size: 15px;
+      text-decoration: none;
     }
     .btn-primary {
       background: #0070ba;
@@ -64,30 +74,121 @@
 <body>
   <div class="container">
     <h2>✏️ تعديل الملف الشخصي</h2>
-    <form onsubmit="saveProfile(event)">
+    <form id="profile-form">
+      <!-- صورة المستخدم -->
+      <label>الصورة الشخصية</label>
+      <img id="profile-preview" class="profile-preview" src="https://via.placeholder.com/120" alt="معاينة الصورة">
+      <input type="file" id="profile-pic" accept="image/*">
+
       <label>الاسم الكامل</label>
-      <input type="text" id="fullname" value="محمد أحمد">
+      <input type="text" id="fullname" value="جاري تحميل ">
 
       <label>الإيميل</label>
-      <input type="email" id="email" value="user@email.com">
+      <input type="email" id="email" value="جاري تحميل ">
 
       <label>رقم الهاتف</label>
-      <input type="text" id="phone" value="+96170000000">
+      <input type="text" id="phone" value="جاري تحميل ">
 
       <label>تاريخ الميلاد</label>
-      <input type="date" id="birthdate" value="2000-01-01">
+      <input type="date" id="birthdate" value="جاري تحميل ">
 
       <button type="submit" class="btn btn-primary">💾 حفظ التعديلات</button>
       <a href="profile.html" class="btn btn-secondary">↩️ رجوع</a>
     </form>
   </div>
 
-  <script>
-    function saveProfile(e) {
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+      authDomain: "fir-dba4c.firebaseapp.com",
+      projectId: "fir-dba4c",
+      storageBucket: "fir-dba4c.appspot.com",
+      messagingSenderId: "160255207915",
+      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
+      measurementId: "G-GYPNMR85G2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    let currentUser = null;
+
+    const profilePreview = document.getElementById('profile-preview');
+    const profilePicInput = document.getElementById('profile-pic');
+
+    // معاينة الصورة قبل الحفظ
+    profilePicInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          profilePreview.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadUserData();
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+
+    async function loadUserData() {
+      if (!currentUser) return;
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        document.getElementById("fullname").value = data.fullname || "";
+        document.getElementById("email").value = data.email || "";
+        document.getElementById("phone").value = data.phone || "";
+        document.getElementById("birthdate").value = data.birthdate || "";
+        profilePreview.src = data.photoURL || "https://via.placeholder.com/120";
+      }
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!currentUser) return;
+
+      const fullname = document.getElementById("fullname").value;
+      const email = document.getElementById("email").value;
+      const phone = document.getElementById("phone").value;
+      const birthdate = document.getElementById("birthdate").value;
+
+      let photoURL = profilePreview.src;
+
+      // رفع الصورة إلى Firebase Storage إذا تم اختيار ملف جديد
+      const file = profilePicInput.files[0];
+      if (file) {
+        const storageReference = storageRef(storage, 'profile_pics/' + currentUser.uid);
+        await uploadBytes(storageReference, file);
+        photoURL = await getDownloadURL(storageReference);
+      }
+
+      // حفظ البيانات في Firestore
+      await setDoc(doc(db, "users", currentUser.uid), {
+        fullname,
+        email,
+        phone,
+        birthdate,
+        photoURL
+      }, { merge: true });
+
       alert("✅ تم حفظ التعديلات بنجاح!");
       window.location.href = "profile.html";
-    }
+    });
   </script>
 </body>
 </html>
