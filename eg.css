@@ -1,0 +1,162 @@
+/* ===== إعدادات أساسية ===== */
+body {
+  font-family: "Cairo", "Tahoma", sans-serif;
+  background: linear-gradient(135deg, #00c6ff, #0070ba);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  direction: rtl;
+}
+
+/* ===== الكارت ===== */
+.card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  width: 450px;
+  text-align: right;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+/* ===== الصورة الشخصية ===== */
+.profile-pic {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 15px;
+  border: 3px solid #0070ba;
+}
+
+/* ===== العنوان ===== */
+.card h2 {
+  text-align: center;
+  color: #0070ba;
+  font-size: 26px;
+  margin-bottom: 20px;
+}
+
+.card h2::before {
+  content: "👤 ";
+}
+
+/* ===== النصوص ===== */
+.card p {
+  text-align: right;
+  margin: 8px 0;
+  font-size: 15px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card p strong {
+  min-width: 160px;
+  color: #0070ba;
+  display: inline-block;
+}
+
+/* ===== أيقونات أوتوماتيك لبعض العناصر ===== */
+#balance::before { content: "💰 "; }
+#bot-status::before { content: "🛠️ "; }
+#subscription::before { content: "📄 "; }
+#end-date::before { content: "⏳ "; }
+
+/* حالة البوت */
+#bot-status {
+  font-weight: bold;
+  color: #333;
+}
+
+#bot-status:contains("✅") {
+  color: green;
+}
+
+#bot-status:contains("❌") {
+  color: red;
+}
+
+/* ===== الأقسام ===== */
+.section {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #ddd;
+}
+
+/* ===== الأزرار ===== */
+button {
+  margin: 6px 4px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* الأزرار بالألوان */
+.btn-primary {
+  background-color: #0070ba;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #005b94;
+  transform: scale(1.05);
+}
+
+.btn-danger {
+  background-color: red;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: darkred;
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background-color: gray;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #555;
+  transform: scale(1.05);
+}
+
+.btn-success {
+  background-color: green;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: darkgreen;
+  transform: scale(1.05);
+}
+
+/* أيقونات أوتوماتيك للأزرار */
+.btn-success::before { content: "💳 "; }
+.btn-danger::before { content: "❌ "; }
+.btn-primary::before { content: "🛠️ "; }
+.btn-secondary::before { content: "↩️ "; }
+
+/* ===== تأثير الدخول ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
