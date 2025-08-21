@@ -44,7 +44,7 @@ window.signupUser = async function() {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // حفظ بيانات المستخدم مؤقتاً مع isVerified=false
+    // حفظ بيانات المستخدم في Firestore
     await setDoc(doc(db, "users", user.uid), {
       email,
       phone,
@@ -52,14 +52,11 @@ window.signupUser = async function() {
       fullname,
       birthdate,
       balance: 0,
-      subscription: null,
-      isVerified: false
+      subscription: null
     });
 
-    // إرسال رابط تفعيل البريد
-    await sendEmailVerification(user, {
-      url: 'https://YOUR_DOMAIN/verify.html' // ضع هنا رابط موقعك لصفحة التفعيل
-    });
+    // إرسال رابط تفعيل البريد فقط
+    await sendEmailVerification(user);
 
     alert("تم إنشاء الحساب ✅\nيرجى التحقق من بريدك الإلكتروني والضغط على رابط التفعيل قبل تسجيل الدخول.");
 
@@ -108,4 +105,5 @@ window.goToLogin = function() {
 </button>
 </div>
 </body>
+</html></body>
 </html>
