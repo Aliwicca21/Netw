@@ -3,65 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>الملف الشخصي</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .card {
-      background: #fff;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0px 6px 15px rgba(0,0,0,0.1);
-      width: 420px;
-      text-align: center;
-    }
-    .profile-pic {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 15px;
-      border: 3px solid #0070ba;
-    }
-    h2, h3 {
-      color: #333;
-      margin-bottom: 10px;
-    }
-    p {
-      text-align: right;
-      margin: 6px 0;
-      font-size: 14px;
-      color: #444;
-    }
-    button {
-      margin: 6px;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: 0.3s;
-    }
-    button:hover {
-      opacity: 0.9;
-      transform: scale(1.05);
-    }
-    .btn-primary { background: #0070ba; color: white; }
-    .btn-danger { background: red; color: white; }
-    .btn-secondary { background: gray; color: white; }
-    .btn-success { background: green; color: white; }
-    .section {
-      margin-top: 20px;
-      padding-top: 10px;
-      border-top: 1px solid #ddd;
-    }
-  </style>
+ <link rel="stylesheet" href="eg.css"> 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";  
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";  
