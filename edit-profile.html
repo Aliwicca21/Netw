@@ -1,194 +1,185 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>تعديل الملف الشخصي</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      direction: rtl;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: 30px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #333;
-    }
-    label {
-      display: block;
-      margin: 10px 0 5px;
-      font-weight: bold;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .profile-preview {
-      display: block;
-      margin: 10px auto;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #0070ba;
-    }
-    .btn {
-      display: inline-block;
-      margin: 5px 3px;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 15px;
-      text-decoration: none;
-    }
-    .btn-primary {
-      background: #0070ba;
-      color: #fff;
-    }
-    .btn-primary:hover {
-      background: #005c94;
-    }
-    .btn-secondary {
-      background: #555;
-      color: #fff;
-    }
-    .btn-secondary:hover {
-      background: #333;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>تعديل الملف الشخصي</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f9f9f9;
+  direction: rtl;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 600px;
+  margin: 30px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+h2 { text-align: center; margin-bottom: 20px; color: #333; }
+label { display: block; margin: 10px 0 5px; font-weight: bold; }
+input { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #ccc; }
+.profile-preview {
+  display: block;
+  margin: 10px auto;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #0070ba;
+}
+.btn { display: inline-block; margin: 5px 3px; padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; text-decoration: none; }
+.btn-primary { background: #0070ba; color: #fff; }
+.btn-primary:hover { background: #005c94; }
+.btn-secondary { background: #555; color: #fff; }
+.btn-secondary:hover { background: #333; }
+.btn-danger { background: #ff3b30; color: #fff; }
+.btn-danger:hover { background: #c1271c; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>✏️ تعديل الملف الشخصي</h2>
-    <form id="profile-form">
-      <!-- صورة المستخدم -->
-      <label>الصورة الشخصية</label>
-      <img id="profile-preview" class="profile-preview" src="https://via.placeholder.com/120" alt="معاينة الصورة">
-      <input type="file" id="profile-pic" accept="image/*">
+<div class="container">
+  <h2>✏️ تعديل الملف الشخصي</h2>
+  <form id="profile-form">
+    <label>الصورة الشخصية</label>
+    <img id="profile-preview" class="profile-preview" src="https://via.placeholder.com/120" alt="معاينة الصورة">
+    <input type="file" id="profile-pic" accept="image/*">
+    <button type="button" id="remove-pic" class="btn btn-danger">🗑 إزالة الصورة</button>
 
-      <label>الاسم الكامل</label>
-      <input type="text" id="fullname" value="جاري تحميل ">
+    <label>الاسم الكامل</label>
+    <input type="text" id="fullname" value="">
 
-      <label>الإيميل</label>
-      <input type="email" id="email" value="جاري تحميل ">
+    <label>الإيميل</label>
+    <input type="email" id="email" value="">
 
-      <label>رقم الهاتف</label>
-      <input type="text" id="phone" value="جاري تحميل ">
+    <label>رقم الهاتف</label>
+    <input type="text" id="phone" value="">
 
-      <label>تاريخ الميلاد</label>
-      <input type="date" id="birthdate" value="جاري تحميل ">
+    <label>تاريخ الميلاد</label>
+    <input type="date" id="birthdate" value="">
 
-      <button type="submit" class="btn btn-primary">💾 حفظ التعديلات</button>
-      <a href="profile.html" class="btn btn-secondary">↩️ رجوع</a>
-    </form>
-  </div>
+    <button type="submit" class="btn btn-primary">💾 حفظ التعديلات</button>
+    <a href="profile.html" class="btn btn-secondary">↩️ رجوع</a>
+  </form>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
-      authDomain: "fir-dba4c.firebaseapp.com",
-      projectId: "fir-dba4c",
-      storageBucket: "fir-dba4c.appspot.com",
-      messagingSenderId: "160255207915",
-      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
-      measurementId: "G-GYPNMR85G2"
+const firebaseConfig = {
+  apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+  authDomain: "fir-dba4c.firebaseapp.com",
+  projectId: "fir-dba4c",
+  storageBucket: "fir-dba4c.appspot.com",
+  messagingSenderId: "160255207915",
+  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
+  measurementId: "G-GYPNMR85G2"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+let currentUser = null;
+const profilePreview = document.getElementById('profile-preview');
+const profilePicInput = document.getElementById('profile-pic');
+const removePicBtn = document.getElementById('remove-pic');
+
+// معاينة الصورة قبل الحفظ
+profilePicInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      profilePreview.src = event.target.result;
     };
+    reader.readAsDataURL(file);
+  }
+});
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
+// إزالة الصورة وإرجاع الـ placeholder
+removePicBtn.addEventListener('click', async () => {
+  if (!currentUser) return;
+  const confirmRemove = confirm("هل تريد إزالة الصورة الشخصية؟");
+  if (!confirmRemove) return;
 
-    let currentUser = null;
+  const storageReference = storageRef(storage, 'profile_pics/' + currentUser.uid);
+  try {
+    await deleteObject(storageReference);
+  } catch(e) {
+    console.warn("لا توجد صورة لحذفها أو حدث خطأ:", e);
+  }
 
-    const profilePreview = document.getElementById('profile-preview');
-    const profilePicInput = document.getElementById('profile-pic');
+  profilePreview.src = "https://via.placeholder.com/120";
+  profilePicInput.value = ""; // مسح الاختيار
+});
 
-    // معاينة الصورة قبل الحفظ
-    profilePicInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          profilePreview.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+// تحميل بيانات المستخدم عند الدخول
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    await loadUserData();
+  } else {
+    window.location.href = "index.html";
+  }
+});
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        await loadUserData();
-      } else {
-        window.location.href = "index.html";
-      }
-    });
+async function loadUserData() {
+  if (!currentUser) return;
+  const docRef = doc(db, "users", currentUser.uid);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    document.getElementById("fullname").value = data.fullname || "";
+    document.getElementById("email").value = data.email || "";
+    document.getElementById("phone").value = data.phone || "";
+    document.getElementById("birthdate").value = data.birthdate || "";
+    if(data.photoURL) profilePreview.src = data.photoURL;
+  }
+}
 
-    async function loadUserData() {
-      if (!currentUser) return;
-      const docRef = doc(db, "users", currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        document.getElementById("fullname").value = data.fullname || "";
-        document.getElementById("email").value = data.email || "";
-        document.getElementById("phone").value = data.phone || "";
-        document.getElementById("birthdate").value = data.birthdate || "";
-        profilePreview.src = data.photoURL || "https://via.placeholder.com/120";
-      }
+// حفظ البيانات
+document.getElementById('profile-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!currentUser) return;
+
+  const fullname = document.getElementById("fullname").value;
+  const email = document.getElementById("email").value;
+  const phone = document.getElementById("phone").value;
+  const birthdate = document.getElementById("birthdate").value;
+
+  let photoURL = null;
+  const file = profilePicInput.files[0];
+  if (file) {
+    try {
+      const storageReference = storageRef(storage, 'profile_pics/' + currentUser.uid);
+      await uploadBytes(storageReference, file);
+      photoURL = await getDownloadURL(storageReference);
+    } catch (error) {
+      console.error("خطأ أثناء رفع الصورة:", error);
+      alert("حدث خطأ أثناء رفع الصورة");
+      return;
     }
+  }
 
-    document.getElementById('profile-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentUser) return;
+  // إذا الصورة هي placeholder ولم يتم رفع صورة جديدة، نحذف photoURL
+  if(profilePreview.src.endsWith("placeholder.com/120")) photoURL = null;
 
-      const fullname = document.getElementById("fullname").value;
-      const email = document.getElementById("email").value;
-      const phone = document.getElementById("phone").value;
-      const birthdate = document.getElementById("birthdate").value;
+  const updateData = { fullname, email, phone, birthdate };
+  if(photoURL) updateData.photoURL = photoURL;
+  else updateData.photoURL = ""; // حذف الصورة في Firestore
 
-      let photoURL = profilePreview.src;
-
-      // رفع الصورة إلى Firebase Storage إذا تم اختيار ملف جديد
-      const file = profilePicInput.files[0];
-      if (file) {
-        const storageReference = storageRef(storage, 'profile_pics/' + currentUser.uid);
-        await uploadBytes(storageReference, file);
-        photoURL = await getDownloadURL(storageReference);
-      }
-
-      // حفظ البيانات في Firestore
-      await setDoc(doc(db, "users", currentUser.uid), {
-        fullname,
-        email,
-        phone,
-        birthdate,
-        photoURL
-      }, { merge: true });
-
-      alert("✅ تم حفظ التعديلات بنجاح!");
-      window.location.href = "profile.html";
-    });
-  </script>
+  await setDoc(doc(db, "users", currentUser.uid), updateData, { merge: true });
+  alert("✅ تم حفظ التعديلات بنجاح!");
+  window.location.href = "profile.html";
+});
+</script>
 </body>
 </html>
