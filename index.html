@@ -36,7 +36,7 @@ window.loginWithEmail = function(e) {
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       alert("تم تسجيل الدخول: " + userCredential.user.email);
-      window.location.href = "home.html"; 
+      window.location.href = "profile.html"; 
     })
     .catch((error) => alert("خطأ: " + error.message));
 };
@@ -49,7 +49,7 @@ window.loginWithGoogle = async function () {
   try {
     const result = await signInWithPopup(auth, provider);
     alert("مرحبًا " + result.user.displayName + " 🎉");
-    window.location.href = "home.html";
+    window.location.href = "profile.html";
   } catch (error) {
     alert("خطأ: " + error.message);
     console.error(error);
