@@ -1,15 +1,21 @@
-7<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<title>تسجيل الدخول</title>
-<link rel="stylesheet" href="alloush.css">
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  <meta charset="UTF-8">
+  <title>تسجيل دخول</title>
+  <link rel="stylesheet" href="alloush.css">
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      GoogleAuthProvider, 
+      signInWithPopup,
+      sendPasswordResetEmail
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-const firebaseConfig = {
+    // إعداد Firebase
+    const firebaseConfig = {
   apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
   authDomain: "fir-dba4c.firebaseapp.com",
   projectId: "fir-dba4c",
@@ -18,82 +24,81 @@ const firebaseConfig = {
   appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
   measurementId: "G-GYPNMR85G2"
 };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+    // تسجيل دخول بالبريد/كلمة مرور
+    window.loginWithEmail = function(e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-window.loginUser = async function() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          alert("تم تسجيل الدخول: " + user.email);
+          window.location.href = "home.html"; 
+        })
+        .catch((error) => {
+          alert("خطأ: " + error.message);
+        });
+    };
 
-  if(!email || !password) {
-    return alert("يرجى إدخال البريد الإلكتروني وكلمة المرور.");
-  }
+    // تسجيل دخول بجوجل
+    const provider = new GoogleAuthProvider();
+    window.loginWithGoogle = function () {
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          const user = result.user;
+          alert("مرحبًا " + user.displayName + " 🎉");
+          window.location.href = "home.html"; 
+        })
+        .catch((error) => {
+          alert("خطأ: " + error.message);
+        });
+    };
 
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    if(user.emailVerified) {
-      // تحقق من Firestore إذا الحساب مفعل
-      const docSnap = await getDoc(doc(db, "users", user.uid));
-      if(docSnap.exists()) {
-        alert("تم تسجيل الدخول بنجاح ✅");
-        window.location.href = "profile.html"; // الصفحة الرئيسية بعد تسجيل الدخول
-      } else {
-        alert("الحساب غير موجود في قاعدة البيانات.");
-        await auth.signOut();
+    // إعادة تعيين كلمة المرور
+    window.resetPassword = function () {
+      const email = document.getElementById("email").value;
+      if (!email) {
+        alert("من فضلك أدخل بريدك الإلكتروني أولاً");
+        return;
       }
-    } else {
-      alert("لم يتم تفعيل بريدك الإلكتروني بعد. يرجى الضغط على رابط التفعيل في البريد.");
-      await auth.signOut();
-    }
-
-  } catch (error) {
-    alert("حدث خطأ: " + error.message);
-  }
-}
-
-window.forgotPassword = async function() {
-  const email = prompt("أدخل بريدك الإلكتروني لاستعادة كلمة المرور:");
-  if(email) {
-    try {
-      await sendPasswordResetEmail(auth, email);
-      alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.");
-    } catch (error) {
-      alert("حدث خطأ: " + error.message);
-    }
-  }
-}
-
-window.goToSignup = function() {
-  window.location.href = "register.html";
-}
-</script>
+      sendPasswordResetEmail(auth, email)
+        .then(() => {
+          alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى " + email);
+        })
+        .catch((error) => {
+          alert("خطأ: " + error.message);
+        });
+    };
+  </script>
 </head>
 <body>
-<div class="card">
-<h2>تسجيل الدخول</h2>
-<form onsubmit="event.preventDefault(); loginUser();">
-<label>البريد الإلكتروني:</label>
-<input type="email" id="email" required>
+  <div class="card">
+    <h2>تسجيل دخول</h2>
+    <form onsubmit="loginWithEmail(event)">
+      <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+      <input type="password" id="password" placeholder="كلمة المرور" required>
+      <button type="submit">تسجيل دخول</button>
+    </form>
 
-<label>كلمة المرور:</label>
-<input type="password" id="password" required>
+    <div class="forgot-password">
+      <a href="#" onclick="resetPassword()">نسيت كلمة المرور؟</a>
+    </div>
 
-<button type="submit" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
-تسجيل الدخول
-</button>
-</form>
+    <hr>
 
-<button onclick="forgotPassword()" style="margin-top:10px; padding:8px 16px; background-color:orange; color:white; border:none; border-radius:5px; cursor:pointer;">
-نسيت كلمة المرور؟
-</button>
+    <!-- زر تسجيل بجوجل -->
+    <button class="google-btn" onclick="loginWithGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+      <span>تسجيل دخول باستخدام Google</span>
+    </button>
 
-<button onclick="goToSignup()" style="margin-top:10px; padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer;">
-ليس لديك حساب؟ إنشاء حساب
-</button>
-</div>
+    <div class="signup-link">
+      <p>ما عندكش حساب؟ <a href="signup.html">إنشاء حساب جديد</a></p>
+    </div>
+  </div>
 </body>
 </html>
