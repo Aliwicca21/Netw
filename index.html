@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>تسجيل دخول</title>
-  <link rel="stylesheet" href="alloush.css">
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { 
-      getAuth, 
-      signInWithEmailAndPassword, 
-      GoogleAuthProvider, 
-      signInWithPopup,
-      sendPasswordResetEmail
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+<meta charset="UTF-8">
+<title>تسجيل دخول</title>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  GoogleAuthProvider, 
+  signInWithPopup,
+  sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-    // إعداد Firebase
-    const firebaseConfig = {
+// إعداد Firebase
+const firebaseConfig = {
   apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
   authDomain: "fir-dba4c.firebaseapp.com",
   projectId: "fir-dba4c",
@@ -24,81 +23,89 @@
   appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
   measurementId: "G-GYPNMR85G2"
 };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
 
-    // تسجيل دخول بالبريد/كلمة مرور
-    window.loginWithEmail = function(e) {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          alert("تم تسجيل الدخول: " + user.email);
-          window.location.href = "home.html"; 
-        })
-        .catch((error) => {
-          alert("خطأ: " + error.message);
-        });
-    };
+// تسجيل دخول بالإيميل
+window.loginWithEmail = function(e) {
+  e.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-    // تسجيل دخول بجوجل
-    const provider = new GoogleAuthProvider();
-    window.loginWithGoogle = function () {
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          const user = result.user;
-          alert("مرحبًا " + user.displayName + " 🎉");
-          window.location.href = "home.html"; 
-        })
-        .catch((error) => {
-          alert("خطأ: " + error.message);
-        });
-    };
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      alert("تم تسجيل الدخول: " + userCredential.user.email);
+      window.location.href = "home.html"; 
+    })
+    .catch((error) => alert("خطأ: " + error.message));
+};
 
-    // إعادة تعيين كلمة المرور
-    window.resetPassword = function () {
-      const email = document.getElementById("email").value;
-      if (!email) {
-        alert("من فضلك أدخل بريدك الإلكتروني أولاً");
-        return;
-      }
-      sendPasswordResetEmail(auth, email)
-        .then(() => {
-          alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى " + email);
-        })
-        .catch((error) => {
-          alert("خطأ: " + error.message);
-        });
-    };
-  </script>
+// Google Sign-In
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: "select_account" });
+
+window.loginWithGoogle = async function () {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    alert("مرحبًا " + result.user.displayName + " 🎉");
+    window.location.href = "home.html";
+  } catch (error) {
+    alert("خطأ: " + error.message);
+    console.error(error);
+  }
+};
+
+// إعادة تعيين كلمة المرور
+window.resetPassword = function () {
+  const email = document.getElementById("email").value;
+  if (!email) { alert("ادخل بريدك الإلكتروني"); return; }
+
+  sendPasswordResetEmail(auth, email)
+    .then(() => alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى " + email))
+    .catch((error) => alert("خطأ: " + error.message));
+};
+</script>
+<style>
+body { font-family: Arial,sans-serif; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#f5f5f5; }
+.card { background:#fff; padding:30px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1); width:320px; text-align:center; }
+input { width:100%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:5px; }
+button { width:100%; padding:10px; margin-top:10px; border:none; border-radius:5px; cursor:pointer; background:#007bff; color:white; font-weight:bold; }
+button.google-btn { display:flex; align-items:center; justify-content:center; gap:8px; background:white; color:#444; border:1px solid #ddd; margin-top:15px; font-weight:bold; }
+button.google-btn img { width:20px; height:20px; }
+button.google-btn:hover { background:#f5f5f5; }
+.forgot-password { text-align:right; margin-top:5px; }
+.forgot-password a { color:#ff5722; text-decoration:none; font-size:14px; }
+.forgot-password a:hover { text-decoration:underline; }
+.signup-link { margin-top:15px; text-align:center; }
+.signup-link a { color:#007bff; text-decoration:none; font-weight:bold; }
+.signup-link a:hover { text-decoration:underline; }
+hr { margin:20px 0; }
+</style>
 </head>
 <body>
-  <div class="card">
-    <h2>تسجيل دخول</h2>
-    <form onsubmit="loginWithEmail(event)">
-      <input type="email" id="email" placeholder="البريد الإلكتروني" required>
-      <input type="password" id="password" placeholder="كلمة المرور" required>
-      <button type="submit">تسجيل دخول</button>
-    </form>
+<div class="card">
+  <h2>تسجيل دخول</h2>
+  <form onsubmit="loginWithEmail(event)">
+    <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+    <input type="password" id="password" placeholder="كلمة المرور" required>
+    <button type="submit">تسجيل دخول</button>
+  </form>
 
-    <div class="forgot-password">
-      <a href="#" onclick="resetPassword()">نسيت كلمة المرور؟</a>
-    </div>
-
-    <hr>
-
-    <!-- زر تسجيل بجوجل -->
-    <button class="google-btn" onclick="loginWithGoogle()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
-      <span>تسجيل دخول باستخدام Google</span>
-    </button>
-
-    <div class="signup-link">
-      <p>ما عندكش حساب؟ <a href="signup.html">إنشاء حساب جديد</a></p>
-    </div>
+  <div class="forgot-password">
+    <a href="#" onclick="resetPassword()">نسيت كلمة المرور؟</a>
   </div>
+
+  <hr>
+
+  <button class="google-btn" onclick="loginWithGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+    <span>تسجيل دخول باستخدام Google</span>
+  </button>
+
+  <div class="signup-link">
+    <p>ما عندكش حساب؟ <a href="signup.html">إنشاء حساب جديد</a></p>
+  </div>
+</div>
 </body>
 </html>
