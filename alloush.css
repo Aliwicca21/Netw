@@ -1,123 +1,181 @@
+/* alloush.css */
+
+/* الجسم والخلفية المتدرجة مع حركة لطيفة */
 body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  margin: 0;
-
-  /* الخلفية بصورة */
-  background: url("background.jpg") no-repeat center center fixed;
-  background-size: cover;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #6a11cb, #2575fc, #00c6ff, #ff512f);
+    background-size: 400% 400%;
+    animation: gradientBG 20s ease infinite;
+    overflow: hidden;
 }
 
-/* صندوق تسجيل الدخول */
+/* حركة التدرج اللوني */
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* تصميم الكارد */
 .card {
-  background: rgba(255, 255, 255, 0.92);
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  text-align: center;
-  width: 320px;
-  animation: fadeIn 1s ease-in-out;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    width: 350px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* تأثير عند مرور الماوس على الكارد */
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 35px 70px rgba(0,0,0,0.25);
+}
+
+/* تأثير ضوء ناعم */
+.card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at top left, rgba(255,255,255,0.2), transparent 70%);
+    transform: rotate(25deg);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* عنوان الكارد */
 .card h2 {
-  margin-bottom: 20px;
-  color: #333;
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 28px;
+    letter-spacing: 1px;
 }
 
-/* حقول الإدخال */
+/* الحقول */
 input {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: 0.3s;
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: 0.3s;
 }
 
 input:focus {
-  border-color: #007bff;
-  outline: none;
-  box-shadow: 0 0 5px rgba(0,123,255,0.5);
+    border-color: #2575fc;
+    box-shadow: 0 0 10px rgba(37,117,252,0.4);
+    outline: none;
 }
 
-/* زر تسجيل الدخول */
+/* أزرار */
 button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background: #007bff;
-  color: white;
-  font-weight: bold;
-  font-size: 15px;
-  transition: 0.3s;
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 button:hover {
-  background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-/* زر جوجل */
+/* زر تسجيل دخول جوجل */
 button.google-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: white;
-  color: #444;
-  border: 1px solid #ddd;
-  margin-top: 15px;
-  font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: white;
+    color: #444;
+    border: 1px solid #ddd;
+    margin-top: 15px;
+    font-weight: bold;
 }
 
 button.google-btn img {
-  width: 20px;
-  height: 20px;
+    width: 22px;
+    height: 22px;
 }
 
 button.google-btn:hover {
-  background: #f5f5f5;
+    background: #f5f5f5;
 }
 
-/* روابط إضافية */
+/* روابط نسيت كلمة المرور */
 .forgot-password {
-  text-align: right;
-  margin-top: 5px;
+    text-align: right;
+    margin-top: 5px;
 }
 
 .forgot-password a {
-  color: #ff5722;
-  text-decoration: none;
-  font-size: 14px;
+    color: #ff5722;
+    text-decoration: none;
+    font-size: 14px;
 }
 
 .forgot-password a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
+/* رابط إنشاء حساب جديد */
 .signup-link {
-  margin-top: 15px;
-  text-align: center;
+    margin-top: 18px;
+    text-align: center;
 }
 
 .signup-link a {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
+    color: #2575fc;
+    text-decoration: none;
+    font-weight: bold;
 }
 
 .signup-link a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
-/* أنيميشن الدخول */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+/* الخط الفاصل */
+hr {
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+/* تأثير صغير لجزيئات ضوء خلف الكارد */
+body::after {
+    content: '';
+    position: absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: moveDots 10s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes moveDots {
+    0% { background-position: 0 0; }
+    100% { background-position: 100px 100px; }
 }
