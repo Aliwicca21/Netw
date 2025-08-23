@@ -1,6 +1,6 @@
 /* ali.e.css */
 
-/* Reset بعض الخصائص الأساسية */
+/* Reset */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -9,12 +9,12 @@
 }
 
 body {
-  background: #f0f2f5;
+  background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  direction: rtl; /* افتراضي عربي */
+  direction: rtl;
 }
 
 /* Selector اللغة */
@@ -25,9 +25,10 @@ body {
 }
 
 .language-selector select {
-  padding: 5px 10px;
+  padding: 6px 12px;
   border-radius: 5px;
   border: 1px solid #ccc;
+  font-size: 14px;
 }
 
 /* الكرت يملأ الشاشة تقريبا */
@@ -35,20 +36,27 @@ body {
   background: #fff;
   width: 100%;
   max-width: 500px;
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  padding: 40px 30px;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
 }
 
 /* العنوان */
 .card h2 {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   color: #333;
   text-align: center;
+  font-size: 24px;
+  letter-spacing: 1px;
 }
 
 /* الحقول */
@@ -57,59 +65,37 @@ body {
 .card input[type="password"],
 .card input[type="date"] {
   width: 100%;
-  padding: 12px 15px;
+  padding: 14px 15px;
   margin: 8px 0;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid #ccc;
   font-size: 16px;
+  transition: 0.3s;
+}
+
+.card input:focus {
+  border-color: #66a6ff;
+  box-shadow: 0 0 8px rgba(102, 166, 255, 0.3);
+  outline: none;
 }
 
 /* الأزرار */
 .card button {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   margin-top: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 16px;
   cursor: pointer;
   transition: 0.3s;
 }
 
 .card button:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
 /* زر إنشاء الحساب */
 .card button#submit-btn {
-  background-color: #4CAF50;
-  color: white;
-}
-
-/* زر الانتقال لتسجيل الدخول */
-.card button#login-btn {
-  background-color: #2196F3;
-  color: white;
-}
-
-/* إضافات للأزرار الثانوية */
-button.secondary {
-  background: #eee;
-  color: #333;
-}
-
-button.secondary:hover {
-  background: #ddd;
-}
-
-/* Responsive للشاشات الصغيرة */
-@media (max-width: 600px) {
-  .card {
-    padding: 20px;
-    width: 90%;
-  }
-  .card input, .card button {
-    font-size: 14px;
-    padding: 10px;
-  }
-}
+  background:
