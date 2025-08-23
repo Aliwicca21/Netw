@@ -5,10 +5,11 @@
   <title>Kalk.Bot Profile</title>
   <link rel="stylesheet" href="eg.css">
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";  
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";  
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";  
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
       authDomain: "fir-dba4c.firebaseapp.com",
@@ -19,172 +20,208 @@
       measurementId: "G-GYPNMR85G2"
     };
 
-    const app = initializeApp(firebaseConfig);  
-    const auth = getAuth(app);  
-    const db = getFirestore(app);  
-    let currentUser = null;  
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    let currentUser = null;
 
-    onAuthStateChanged(auth, async (user) => {  
-      if (user) {  
-        currentUser = user;  
-        await loadUserData();  
-      } else {  
-        window.location.href = "index.html";  
-      }  
-    });  
-
-    async function loadUserData() {  
-      if (!currentUser) return;  
-      const docRef = doc(db, "users", currentUser.uid);  
-      const docSnap = await getDoc(docRef);  
-      if (docSnap.exists()) {  
-        const data = docSnap.data();  
-        document.getElementById("username").textContent = data.username || "N/A";  
-        document.getElementById("fullname").textContent = data.fullname || "N/A";  
-        document.getElementById("email").textContent = data.email;  
-        document.getElementById("phone").textContent = data.phone || "N/A";  
-        document.getElementById("birthdate").textContent = data.birthdate || "N/A";  
-        document.getElementById("balance").textContent = (data.balance || 0).toFixed(2) + " $";  
-        document.getElementById("subscription").textContent = data.subscription || "None";  
-        document.getElementById("end-date").textContent = data.endDate || "N/A";  
-        document.getElementById("bot-status").textContent = data.botActive ? "✅ Active" : "❌ Inactive";  
-
-        document.getElementById("profile-pic").src = data.photoURL || "https://via.placeholder.com/150";  
-      }  
-    }  
-
-    window.logout = async function() {  
-      await signOut(auth);  
-      window.location.href = "index.html";  
-    }  
-
-    window.goToBot = function() { window.location.href = "botData.html"; }
-    window.goToEditProfile = function() { window.location.href = "edit-profile.html"; }
-    window.goBack = function() { window.history.back(); }
-
-    window.renewSub = function(months) { window.location.href = "recharge.html?months=" + months; }
-    window.cancelSub = function() { window.location.href = "recharge.html?cancel=true"; }
-    window.recharge = function() { window.location.href = "recharge.html"; }
-
-    // تبديل اللغة (افتراضي إنجليزي)
-    const langMap = {
-      "Recharge": { ar: "شحن", en: "Recharge" },
-      "Subscription": { ar: "الاشتراك", en: "Subscription" },
-      "Account": { ar: "الحساب", en: "Account" },
-      "Username:": { ar: "اسم المستخدم:", en: "Username:" },
-      "Full Name:": { ar: "الاسم الكامل:", en: "Full Name:" },
-      "Email:": { ar: "البريد الإلكتروني:", en: "Email:" },
-      "Phone:": { ar: "الهاتف:", en: "Phone:" },
-      "Birth Date:": { ar: "تاريخ الميلاد:", en: "Birth Date:" },
-      "Balance:": { ar: "الرصيد:", en: "Balance:" },
-      "Subscription:": { ar: "الاشتراك:", en: "Subscription:" },
-      "End Date:": { ar: "تاريخ الانتهاء:", en: "End Date:" },
-      "Bot Status:": { ar: "حالة البوت:", en: "Bot Status:" },
-      "1 Month (2.50$)": { ar: "شهر (2.50$)", en: "1 Month (2.50$)" },
-      "3 Months (7.50$)": { ar: "3 شهور (7.50$)", en: "3 Months (7.50$)" },
-      "1 Year (30$)": { ar: "سنة (30$)", en: "1 Year (30$)" },
-      "Cancel": { ar: "إلغاء", en: "Cancel" },
-      "Bot Data": { ar: "بيانات البوت", en: "Bot Data" },
-      "Edit Profile": { ar: "تعديل الملف", en: "Edit Profile" },
-      "Back": { ar: "رجوع", en: "Back" },
-      "Logout": { ar: "تسجيل خروج", en: "Logout" }
+    // ✅ الترجمة
+    const translations = {
+      en: {
+        username: "Username",
+        fullname: "Full Name",
+        email: "Email",
+        phone: "Phone",
+        birthdate: "Birth Date",
+        balance: "Balance",
+        subscription: "Subscription",
+        endDate: "End Date",
+        botStatus: "Bot Status",
+        recharge: "Recharge",
+        subSection: "Subscription",
+        account: "Account",
+        active: "✅ Active",
+        inactive: "❌ Inactive",
+        rechargeBtn: "💳 Recharge",
+        sub1: "1 Month (2.50$)",
+        sub3: "3 Months (7.50$)",
+        sub12: "1 Year (30$)",
+        cancel: "Cancel",
+        botData: "Bot Data",
+        edit: "Edit Profile",
+        back: "Back",
+        logout: "Logout"
+      },
+      ar: {
+        username: "اسم المستخدم",
+        fullname: "الاسم الكامل",
+        email: "البريد الإلكتروني",
+        phone: "رقم الهاتف",
+        birthdate: "تاريخ الميلاد",
+        balance: "الرصيد",
+        subscription: "الاشتراك",
+        endDate: "تاريخ الانتهاء",
+        botStatus: "حالة البوت",
+        recharge: "إعادة شحن",
+        subSection: "الاشتراك",
+        account: "الحساب",
+        active: "✅ مفعل",
+        inactive: "❌ غير مفعل",
+        rechargeBtn: "💳 شحن",
+        sub1: "شهر (2.50$)",
+        sub3: "3 أشهر (7.50$)",
+        sub12: "سنة (30$)",
+        cancel: "إلغاء",
+        botData: "بيانات البوت",
+        edit: "تعديل الحساب",
+        back: "رجوع",
+        logout: "تسجيل الخروج"
+      }
     };
 
-    window.setLanguage = function(lang) {
-      // الاتجاه
-      document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    // ✅ تحميل بيانات المستخدم
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadUserData();
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+
+    async function loadUserData() {
+      if (!currentUser) return;
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        document.getElementById("username").textContent = data.username || "N/A";
+        document.getElementById("fullname").textContent = data.fullname || "N/A";
+        document.getElementById("email").textContent = data.email;
+        document.getElementById("phone").textContent = data.phone || "N/A";
+        document.getElementById("birthdate").textContent = data.birthdate || "N/A";
+        document.getElementById("balance").textContent = (data.balance || 0).toFixed(2) + " $";
+        document.getElementById("subscription").textContent = data.subscription || "None";
+        document.getElementById("end-date").textContent = data.endDate || "N/A";
+        document.getElementById("bot-status").textContent = data.botActive ? translations[currentLang].active : translations[currentLang].inactive;
+
+        document.getElementById("profile-pic").src = data.photoURL || "https://via.placeholder.com/150";
+      }
+    }
+
+    // ✅ تغيير اللغة
+    let currentLang = "en";
+    window.changeLanguage = function (lang) {
+      currentLang = lang;
       document.documentElement.lang = lang;
+      const t = translations[lang];
 
-      // تبديل النصوص
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        const map = langMap[key];
-        if (map) el.textContent = map[lang];
-      });
+      // تحديث النصوص
+      document.querySelector("[data-username-label]").textContent = t.username;
+      document.querySelector("[data-fullname-label]").textContent = t.fullname;
+      document.querySelector("[data-email-label]").textContent = t.email;
+      document.querySelector("[data-phone-label]").textContent = t.phone;
+      document.querySelector("[data-birthdate-label]").textContent = t.birthdate;
+      document.querySelector("[data-balance-label]").textContent = t.balance;
+      document.querySelector("[data-subscription-label]").textContent = t.subscription;
+      document.querySelector("[data-enddate-label]").textContent = t.endDate;
+      document.querySelector("[data-botstatus-label]").textContent = t.botStatus;
+
+      document.getElementById("recharge-title").textContent = t.recharge;
+      document.getElementById("subscription-title").textContent = t.subSection;
+      document.getElementById("account-title").textContent = t.account;
+
+      document.getElementById("recharge-btn").textContent = t.rechargeBtn;
+      document.getElementById("sub1-btn").textContent = t.sub1;
+      document.getElementById("sub3-btn").textContent = t.sub3;
+      document.getElementById("sub12-btn").textContent = t.sub12;
+      document.getElementById("cancel-btn").textContent = t.cancel;
+      document.getElementById("bot-btn").textContent = t.botData;
+      document.getElementById("edit-btn").textContent = t.edit;
+      document.getElementById("back-btn").textContent = t.back;
+      document.getElementById("logout-btn").textContent = t.logout;
+
+      // تحديث حالة البوت بعد تغيير اللغة
+      loadUserData();
     };
 
-    // افتراضي إنجليزي
-    window.addEventListener('DOMContentLoaded', () => setLanguage('en'));
+    // ✅ أزرار التحكم
+    window.logout = async function () {
+      await signOut(auth);
+      window.location.href = "index.html";
+    }
+    window.goToBot = function () { window.location.href = "botData.html"; }
+    window.goToEditProfile = function () { window.location.href = "edit-profile.html"; }
+    window.goBack = function () { window.history.back(); }
+    window.renewSub = function (months) { window.location.href = "recharge.html?months=" + months; }
+    window.cancelSub = function () { window.location.href = "recharge.html?cancel=true"; }
+    window.recharge = function () { window.location.href = "recharge.html"; }
   </script>
 </head>
 <body>
-
-  <!-- Language Selector -->
+  <!-- ✅ Language Selector -->
   <div class="language-selector">
-    <select onchange="setLanguage(this.value)">
+    <select onchange="changeLanguage(this.value)">
       <option value="en" selected>English</option>
       <option value="ar">العربية</option>
     </select>
   </div>
 
   <div class="card">
-
     <img id="profile-pic" class="profile-pic" src="https://via.placeholder.com/150" alt="Profile Picture">
-    
-    <!-- بيانات المستخدم في مربعات -->
+
+    <!-- ✅ بيانات المستخدم -->
     <div class="data-grid">
-
       <div class="data-box"><span class="data-icon">👤</span>
-        <div><p data-i18n="Username:">Username:</p><p id="username">Loading...</p></div>
+        <div><p data-username-label>Username:</p><p id="username">Loading...</p></div>
       </div>
-
       <div class="data-box"><span class="data-icon">📝</span>
-        <div><p data-i18n="Full Name:">Full Name:</p><p id="fullname">Loading...</p></div>
+        <div><p data-fullname-label>Full Name:</p><p id="fullname">Loading...</p></div>
       </div>
-
       <div class="data-box"><span class="data-icon">📧</span>
-        <div><p data-i18n="Email:">Email:</p><p id="email">Loading...</p></div>
+        <div><p data-email-label>Email:</p><p id="email">Loading...</p></div>
       </div>
-
       <div class="data-box"><span class="data-icon">📱</span>
-        <div><p data-i18n="Phone:">Phone:</p><p id="phone">Loading...</p></div>
+        <div><p data-phone-label>Phone:</p><p id="phone">Loading...</p></div>
       </div>
-
       <div class="data-box"><span class="data-icon">🎂</span>
-        <div><p data-i18n="Birth Date:">Birth Date:</p><p id="birthdate">Loading...</p></div>
+        <div><p data-birthdate-label>Birth Date:</p><p id="birthdate">Loading...</p></div>
       </div>
-
       <div class="data-box"><span class="data-icon">💰</span>
-        <div><p data-i18n="Balance:">Balance:</p><p id="balance">Loading...</p></div>
+        <div><p data-balance-label>Balance:</p><p id="balance">Loading...</p></div>
       </div>
-
       <div class="data-box"><span class="data-icon">🗓️</span>
-        <div><p data-i18n="Subscription:">Subscription:</p><p id="subscription">Loading...</p></div>
+        <div><p data-subscription-label>Subscription:</p><p id="subscription">Loading...</p></div>
       </div>
-
       <div class="data-box"><span class="data-icon">⏳</span>
-        <div><p data-i18n="End Date:">End Date:</p><p id="end-date">Loading...</p></div>
+        <div><p data-enddate-label>End Date:</p><p id="end-date">Loading...</p></div>
       </div>
-
       <div class="data-box"><span class="data-icon">🤖</span>
-        <div><p data-i18n="Bot Status:">Bot Status:</p><p id="bot-status">Loading...</p></div>
+        <div><p data-botstatus-label>Bot Status:</p><p id="bot-status">Loading...</p></div>
       </div>
-
     </div>
 
-    <!-- أقسام الأزرار -->
+    <!-- ✅ أقسام -->
     <div class="section">
-      <h3 data-i18n="Recharge">Recharge</h3>
-      <button class="btn-success" onclick="recharge()">💳 <span data-i18n="Recharge">Recharge</span></button>
-    </div>
-
-    <div class="section">
-      <h3 data-i18n="Subscription">Subscription</h3>
-      <button class="btn-primary" onclick="renewSub(1)"><span data-i18n="1 Month (2.50$)">1 Month (2.50$)</span></button>
-      <button class="btn-primary" onclick="renewSub(3)"><span data-i18n="3 Months (7.50$)">3 Months (7.50$)</span></button>
-      <button class="btn-primary" onclick="renewSub(12)"><span data-i18n="1 Year (30$)">1 Year (30$)</span></button>
-      <button class="btn-danger" onclick="cancelSub()"><span data-i18n="Cancel">Cancel</span></button>
+      <h3 id="recharge-title">Recharge</h3>
+      <button id="recharge-btn" class="btn-success" onclick="recharge()">💳 Recharge</button>
     </div>
 
     <div class="section">
-      <h3 data-i18n="Account">Account</h3>
-      <button class="btn-primary" onclick="goToBot()"><span data-i18n="Bot Data">Bot Data</span></button>
-      <button class="btn-primary" onclick="goToEditProfile()"><span data-i18n="Edit Profile">Edit Profile</span></button>
-      <button class="btn-secondary" onclick="goBack()"><span data-i18n="Back">Back</span></button>
-      <button class="btn-danger" onclick="logout()"><span data-i18n="Logout">Logout</span></button>
+      <h3 id="subscription-title">Subscription</h3>
+      <button id="sub1-btn" class="btn-primary" onclick="renewSub(1)">1 Month (2.50$)</button>
+      <button id="sub3-btn" class="btn-primary" onclick="renewSub(3)">3 Months (7.50$)</button>
+      <button id="sub12-btn" class="btn-primary" onclick="renewSub(12)">1 Year (30$)</button>
+      <button id="cancel-btn" class="btn-danger" onclick="cancelSub()">Cancel</button>
     </div>
 
+    <div class="section">
+      <h3 id="account-title">Account</h3>
+      <button id="bot-btn" class="btn-primary" onclick="goToBot()">Bot Data</button>
+      <button id="edit-btn" class="btn-primary" onclick="goToEditProfile()">Edit Profile</button>
+      <button id="back-btn" class="btn-secondary" onclick="goBack()">Back</button>
+      <button id="logout-btn" class="btn-danger" onclick="logout()">Logout</button>
+    </div>
   </div>
-
 </body>
 </html>
