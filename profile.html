@@ -58,47 +58,60 @@
       window.location.href = "index.html";  
     }  
 
-    window.goToBot = function() {
-      window.location.href = "botData.html";
-    }
+    window.goToBot = function() { window.location.href = "botData.html"; }
+    window.goToEditProfile = function() { window.location.href = "edit-profile.html"; }
+    window.goBack = function() { window.history.back(); }
 
-    window.goToEditProfile = function() {
-      window.location.href = "edit-profile.html";
-    }
+    window.renewSub = function(months) { window.location.href = "recharge.html?months=" + months; }
+    window.cancelSub = function() { window.location.href = "recharge.html?cancel=true"; }
+    window.recharge = function() { window.location.href = "recharge.html"; }
 
-    window.goBack = function() {
-      window.history.back();
-    }
+    // تبديل اللغة (افتراضي إنجليزي)
+    const langMap = {
+      "Recharge": { ar: "شحن", en: "Recharge" },
+      "Subscription": { ar: "الاشتراك", en: "Subscription" },
+      "Account": { ar: "الحساب", en: "Account" },
+      "Username:": { ar: "اسم المستخدم:", en: "Username:" },
+      "Full Name:": { ar: "الاسم الكامل:", en: "Full Name:" },
+      "Email:": { ar: "البريد الإلكتروني:", en: "Email:" },
+      "Phone:": { ar: "الهاتف:", en: "Phone:" },
+      "Birth Date:": { ar: "تاريخ الميلاد:", en: "Birth Date:" },
+      "Balance:": { ar: "الرصيد:", en: "Balance:" },
+      "Subscription:": { ar: "الاشتراك:", en: "Subscription:" },
+      "End Date:": { ar: "تاريخ الانتهاء:", en: "End Date:" },
+      "Bot Status:": { ar: "حالة البوت:", en: "Bot Status:" },
+      "1 Month (2.50$)": { ar: "شهر (2.50$)", en: "1 Month (2.50$)" },
+      "3 Months (7.50$)": { ar: "3 شهور (7.50$)", en: "3 Months (7.50$)" },
+      "1 Year (30$)": { ar: "سنة (30$)", en: "1 Year (30$)" },
+      "Cancel": { ar: "إلغاء", en: "Cancel" },
+      "Bot Data": { ar: "بيانات البوت", en: "Bot Data" },
+      "Edit Profile": { ar: "تعديل الملف", en: "Edit Profile" },
+      "Back": { ar: "رجوع", en: "Back" },
+      "Logout": { ar: "تسجيل خروج", en: "Logout" }
+    };
 
-    window.renewSub = function(months) {
-      window.location.href = "recharge.html?months=" + months;
-    }
+    window.setLanguage = function(lang) {
+      // الاتجاه
+      document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+      document.documentElement.lang = lang;
 
-    window.cancelSub = function() {
-      window.location.href = "recharge.html?cancel=true";
-    }
+      // تبديل النصوص
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const map = langMap[key];
+        if (map) el.textContent = map[lang];
+      });
+    };
 
-    window.recharge = function() {
-      window.location.href = "recharge.html";
-    }
-
-    // تغيير اتجاه الصفحة حسب اللغة
-    window.changeLanguage = function(lang) {
-      if(lang === 'ar') {
-        document.documentElement.lang = 'ar';
-        document.body.dir = 'rtl';
-      } else {
-        document.documentElement.lang = 'en';
-        document.body.dir = 'ltr';
-      }
-    }
+    // افتراضي إنجليزي
+    window.addEventListener('DOMContentLoaded', () => setLanguage('en'));
   </script>
 </head>
-<body dir="ltr">
+<body>
 
   <!-- Language Selector -->
   <div class="language-selector">
-    <select onchange="changeLanguage(this.value)">
+    <select onchange="setLanguage(this.value)">
       <option value="en" selected>English</option>
       <option value="ar">العربية</option>
     </select>
@@ -112,63 +125,63 @@
     <div class="data-grid">
 
       <div class="data-box"><span class="data-icon">👤</span>
-        <div><p>Username:</p><p id="username">Loading...</p></div>
+        <div><p data-i18n="Username:">Username:</p><p id="username">Loading...</p></div>
       </div>
 
       <div class="data-box"><span class="data-icon">📝</span>
-        <div><p>Full Name:</p><p id="fullname">Loading...</p></div>
+        <div><p data-i18n="Full Name:">Full Name:</p><p id="fullname">Loading...</p></div>
       </div>
 
       <div class="data-box"><span class="data-icon">📧</span>
-        <div><p>Email:</p><p id="email">Loading...</p></div>
+        <div><p data-i18n="Email:">Email:</p><p id="email">Loading...</p></div>
       </div>
 
       <div class="data-box"><span class="data-icon">📱</span>
-        <div><p>Phone:</p><p id="phone">Loading...</p></div>
+        <div><p data-i18n="Phone:">Phone:</p><p id="phone">Loading...</p></div>
       </div>
 
       <div class="data-box"><span class="data-icon">🎂</span>
-        <div><p>Birth Date:</p><p id="birthdate">Loading...</p></div>
+        <div><p data-i18n="Birth Date:">Birth Date:</p><p id="birthdate">Loading...</p></div>
       </div>
 
       <div class="data-box"><span class="data-icon">💰</span>
-        <div><p>Balance:</p><p id="balance">Loading...</p></div>
+        <div><p data-i18n="Balance:">Balance:</p><p id="balance">Loading...</p></div>
       </div>
 
       <div class="data-box"><span class="data-icon">🗓️</span>
-        <div><p>Subscription:</p><p id="subscription">Loading...</p></div>
+        <div><p data-i18n="Subscription:">Subscription:</p><p id="subscription">Loading...</p></div>
       </div>
 
       <div class="data-box"><span class="data-icon">⏳</span>
-        <div><p>End Date:</p><p id="end-date">Loading...</p></div>
+        <div><p data-i18n="End Date:">End Date:</p><p id="end-date">Loading...</p></div>
       </div>
 
       <div class="data-box"><span class="data-icon">🤖</span>
-        <div><p>Bot Status:</p><p id="bot-status">Loading...</p></div>
+        <div><p data-i18n="Bot Status:">Bot Status:</p><p id="bot-status">Loading...</p></div>
       </div>
 
     </div>
 
     <!-- أقسام الأزرار -->
     <div class="section">
-      <h3>Recharge</h3>
-      <button class="btn-success" onclick="recharge()">💳 Recharge</button>
+      <h3 data-i18n="Recharge">Recharge</h3>
+      <button class="btn-success" onclick="recharge()">💳 <span data-i18n="Recharge">Recharge</span></button>
     </div>
 
     <div class="section">
-      <h3>Subscription</h3>
-      <button class="btn-primary" onclick="renewSub(1)">1 Month (2.50$)</button>
-      <button class="btn-primary" onclick="renewSub(3)">3 Months (7.50$)</button>
-      <button class="btn-primary" onclick="renewSub(12)">1 Year (30$)</button>
-      <button class="btn-danger" onclick="cancelSub()">Cancel</button>
+      <h3 data-i18n="Subscription">Subscription</h3>
+      <button class="btn-primary" onclick="renewSub(1)"><span data-i18n="1 Month (2.50$)">1 Month (2.50$)</span></button>
+      <button class="btn-primary" onclick="renewSub(3)"><span data-i18n="3 Months (7.50$)">3 Months (7.50$)</span></button>
+      <button class="btn-primary" onclick="renewSub(12)"><span data-i18n="1 Year (30$)">1 Year (30$)</span></button>
+      <button class="btn-danger" onclick="cancelSub()"><span data-i18n="Cancel">Cancel</span></button>
     </div>
 
     <div class="section">
-      <h3>Account</h3>
-      <button class="btn-primary" onclick="goToBot()">Bot Data</button>
-      <button class="btn-primary" onclick="goToEditProfile()">Edit Profile</button>
-      <button class="btn-secondary" onclick="goBack()">Back</button>
-      <button class="btn-danger" onclick="logout()">Logout</button>
+      <h3 data-i18n="Account">Account</h3>
+      <button class="btn-primary" onclick="goToBot()"><span data-i18n="Bot Data">Bot Data</span></button>
+      <button class="btn-primary" onclick="goToEditProfile()"><span data-i18n="Edit Profile">Edit Profile</span></button>
+      <button class="btn-secondary" onclick="goBack()"><span data-i18n="Back">Back</span></button>
+      <button class="btn-danger" onclick="logout()"><span data-i18n="Logout">Logout</span></button>
     </div>
 
   </div>
