@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Profile</title>
-  <link rel="stylesheet" href="eg.css"> 
+  <title>Kalk.Bot Profile</title>
+  <link rel="stylesheet" href="eg.css">
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";  
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";  
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";  
-    
+
     const firebaseConfig = {
       apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
       authDomain: "fir-dba4c.firebaseapp.com",
@@ -18,89 +18,16 @@
       appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
       measurementId: "G-GYPNMR85G2"
     };
-    
+
     const app = initializeApp(firebaseConfig);  
     const auth = getAuth(app);  
     const db = getFirestore(app);  
     let currentUser = null;  
 
-    // ترجمة النصوص
-    const translations = {
-      en: {
-        profileTitle: "Profile",
-        username: "Username",
-        fullname: "Full Name",
-        email: "Email",
-        phone: "Phone",
-        birthdate: "Birth Date",
-        balance: "Balance",
-        subscription: "Subscription",
-        endDate: "End Date",
-        botStatus: "Bot Status",
-        recharge: "💳 Recharge",
-        renewMonth: "Renew 1 Month ($2.50)",
-        renew3Months: "Renew 3 Months ($7.50)",
-        renewYear: "Renew 1 Year ($30)",
-        cancelSub: "Cancel Subscription",
-        viewBot: "View Bot Data",
-        editProfile: "Edit Profile",
-        goBack: "Back",
-        logout: "Logout"
-      },
-      ar: {
-        profileTitle: "الملف الشخصي",
-        username: "اسم المستخدم",
-        fullname: "الاسم الكامل",
-        email: "الإيميل",
-        phone: "رقم الهاتف",
-        birthdate: "تاريخ الميلاد",
-        balance: "الرصيد",
-        subscription: "الاشتراك",
-        endDate: "موعد انتهاء الاشتراك",
-        botStatus: "حالة البوت",
-        recharge: "💳 شحن الرصيد",
-        renewMonth: "تجديد شهر (2.50$)",
-        renew3Months: "تجديد 3 أشهر (7.50$)",
-        renewYear: "تجديد سنة (30$)",
-        cancelSub: "إلغاء الاشتراك",
-        viewBot: "عرض بيانات البوت",
-        editProfile: "تعديل الملف الشخصي",
-        goBack: "رجوع",
-        logout: "تسجيل الخروج"
-      }
-    };
-
-    // تغيير اللغة
-    window.changeLanguage = function(lang) {
-      document.getElementById("profileTitle").textContent = translations[lang].profileTitle;
-      document.getElementById("label-username").textContent = translations[lang].username + ":";
-      document.getElementById("label-fullname").textContent = translations[lang].fullname + ":";
-      document.getElementById("label-email").textContent = translations[lang].email + ":";
-      document.getElementById("label-phone").textContent = translations[lang].phone + ":";
-      document.getElementById("label-birthdate").textContent = translations[lang].birthdate + ":";
-      document.getElementById("label-balance").textContent = translations[lang].balance + ":";
-      document.getElementById("label-subscription").textContent = translations[lang].subscription + ":";
-      document.getElementById("label-end-date").textContent = translations[lang].endDate + ":";
-      document.getElementById("label-bot-status").textContent = translations[lang].botStatus + ":";
-
-      const buttons = document.querySelectorAll(".card button");
-      buttons[0].textContent = translations[lang].recharge;
-      buttons[1].textContent = translations[lang].renewMonth;
-      buttons[2].textContent = translations[lang].renew3Months;
-      buttons[3].textContent = translations[lang].renewYear;
-      buttons[4].textContent = translations[lang].cancelSub;
-      buttons[5].textContent = translations[lang].viewBot;
-      buttons[6].textContent = translations[lang].editProfile;
-      buttons[7].textContent = translations[lang].goBack;
-      buttons[8].textContent = translations[lang].logout;
-    }
-
-    // تحميل بيانات المستخدم من Firebase
     onAuthStateChanged(auth, async (user) => {  
       if (user) {  
         currentUser = user;  
         await loadUserData();  
-        changeLanguage('en'); // لغة افتراضية: إنجليزي
       } else {  
         window.location.href = "index.html";  
       }  
@@ -112,17 +39,17 @@
       const docSnap = await getDoc(docRef);  
       if (docSnap.exists()) {  
         const data = docSnap.data();  
-        document.getElementById("username").textContent = data.username || "No Name";  
-        document.getElementById("fullname").textContent = data.fullname || "No Name";  
+        document.getElementById("username").textContent = data.username || "N/A";  
+        document.getElementById("fullname").textContent = data.fullname || "N/A";  
         document.getElementById("email").textContent = data.email;  
         document.getElementById("phone").textContent = data.phone || "N/A";  
         document.getElementById("birthdate").textContent = data.birthdate || "N/A";  
         document.getElementById("balance").textContent = (data.balance || 0).toFixed(2) + " $";  
-        document.getElementById("subscription").textContent = data.subscription || "No Subscription";  
+        document.getElementById("subscription").textContent = data.subscription || "None";  
         document.getElementById("end-date").textContent = data.endDate || "N/A";  
         document.getElementById("bot-status").textContent = data.botActive ? "✅ Active" : "❌ Inactive";  
 
-        document.getElementById("profile-pic").src = data.photoURL || "https://via.placeholder.com/120";  
+        document.getElementById("profile-pic").src = data.photoURL || "https://via.placeholder.com/150";  
       }  
     }  
 
@@ -154,32 +81,75 @@
     window.recharge = function() {
       window.location.href = "recharge.html";
     }
+
+    // تغيير اتجاه الصفحة حسب اللغة
+    window.changeLanguage = function(lang) {
+      if(lang === 'ar') {
+        document.documentElement.lang = 'ar';
+        document.body.dir = 'rtl';
+      } else {
+        document.documentElement.lang = 'en';
+        document.body.dir = 'ltr';
+      }
+    }
   </script>
 </head>
-<body>
+<body dir="ltr">
+
+  <!-- Language Selector -->
+  <div class="language-selector">
+    <select onchange="changeLanguage(this.value)">
+      <option value="en" selected>English</option>
+      <option value="ar">العربية</option>
+    </select>
+  </div>
+
   <div class="card">
-    <!-- اختيار اللغة -->
-    <div class="language-selector">
-      <label for="lang">Language:</label>
-      <select id="lang" onchange="changeLanguage(this.value)">
-        <option value="en" selected>English</option>
-        <option value="ar">العربية</option>
-      </select>
+
+    <img id="profile-pic" class="profile-pic" src="https://via.placeholder.com/150" alt="Profile Picture">
+    
+    <!-- بيانات المستخدم في مربعات -->
+    <div class="data-grid">
+
+      <div class="data-box"><span class="data-icon">👤</span>
+        <div><p>Username:</p><p id="username">Loading...</p></div>
+      </div>
+
+      <div class="data-box"><span class="data-icon">📝</span>
+        <div><p>Full Name:</p><p id="fullname">Loading...</p></div>
+      </div>
+
+      <div class="data-box"><span class="data-icon">📧</span>
+        <div><p>Email:</p><p id="email">Loading...</p></div>
+      </div>
+
+      <div class="data-box"><span class="data-icon">📱</span>
+        <div><p>Phone:</p><p id="phone">Loading...</p></div>
+      </div>
+
+      <div class="data-box"><span class="data-icon">🎂</span>
+        <div><p>Birth Date:</p><p id="birthdate">Loading...</p></div>
+      </div>
+
+      <div class="data-box"><span class="data-icon">💰</span>
+        <div><p>Balance:</p><p id="balance">Loading...</p></div>
+      </div>
+
+      <div class="data-box"><span class="data-icon">🗓️</span>
+        <div><p>Subscription:</p><p id="subscription">Loading...</p></div>
+      </div>
+
+      <div class="data-box"><span class="data-icon">⏳</span>
+        <div><p>End Date:</p><p id="end-date">Loading...</p></div>
+      </div>
+
+      <div class="data-box"><span class="data-icon">🤖</span>
+        <div><p>Bot Status:</p><p id="bot-status">Loading...</p></div>
+      </div>
+
     </div>
 
-    <img id="profile-pic" class="profile-pic" src="https://via.placeholder.com/120" alt="Profile Picture">
-    <h2 id="profileTitle">Profile</h2>
-
-    <p><strong id="label-username">Username:</strong> <span id="username">Loading...</span></p>
-    <p><strong id="label-fullname">Full Name:</strong> <span id="fullname">Loading...</span></p>
-    <p><strong id="label-email">Email:</strong> <span id="email">Loading...</span></p>
-    <p><strong id="label-phone">Phone:</strong> <span id="phone">Loading...</span></p>
-    <p><strong id="label-birthdate">Birth Date:</strong> <span id="birthdate">Loading...</span></p>
-    <p><strong id="label-balance">Balance:</strong> <span id="balance">Loading...</span></p>
-    <p><strong id="label-subscription">Subscription:</strong> <span id="subscription">Loading...</span></p>
-    <p><strong id="label-end-date">End Date:</strong> <span id="end-date">Loading...</span></p>
-    <p><strong id="label-bot-status">Bot Status:</strong> <span id="bot-status">Loading...</span></p>
-
+    <!-- أقسام الأزرار -->
     <div class="section">
       <h3>Recharge</h3>
       <button class="btn-success" onclick="recharge()">💳 Recharge</button>
@@ -187,17 +157,21 @@
 
     <div class="section">
       <h3>Subscription</h3>
-      <button class="btn-primary" onclick="renewSub(1)">Renew 1 Month ($2.50)</button>
-      <button class="btn-primary" onclick="renewSub(3)">Renew 3 Months ($7.50)</button>
-      <button class="btn-primary" onclick="renewSub(12)">Renew 1 Year ($30)</button>
-      <button class="btn-danger" onclick="cancelSub()">Cancel Subscription</button>
+      <button class="btn-primary" onclick="renewSub(1)">1 Month (2.50$)</button>
+      <button class="btn-primary" onclick="renewSub(3)">3 Months (7.50$)</button>
+      <button class="btn-primary" onclick="renewSub(12)">1 Year (30$)</button>
+      <button class="btn-danger" onclick="cancelSub()">Cancel</button>
     </div>
 
     <div class="section">
       <h3>Account</h3>
-      <button class="btn-primary" onclick="goToBot()">View Bot Data</button>
+      <button class="btn-primary" onclick="goToBot()">Bot Data</button>
       <button class="btn-primary" onclick="goToEditProfile()">Edit Profile</button>
       <button class="btn-secondary" onclick="goBack()">Back</button>
       <button class="btn-danger" onclick="logout()">Logout</button>
     </div>
+
   </div>
+
+</body>
+</html>
