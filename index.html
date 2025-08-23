@@ -1,71 +1,95 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kalk.Bot - تسجيل دخول</title>
+<title>Kalk.Bot - Login</title>
 <link rel="stylesheet" href="alloush.css">
 <script type="module">
+// Firebase + Auth
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
-// إعداد Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
-  authDomain: "fir-dba4c.firebaseapp.com",
-  projectId: "fir-dba4c",
-  storageBucket: "fir-dba4c.firebasestorage.app",
-  messagingSenderId: "160255207915",
-  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
-  measurementId: "G-GYPNMR85G2"
+// Firebase config
+const firebaseConfig = { 
+  apiKey:"AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8", 
+  authDomain:"fir-dba4c.firebaseapp.com", 
+  projectId:"fir-dba4c", 
+  storageBucket:"fir-dba4c.firebasestorage.app", 
+  messagingSenderId:"160255207915", 
+  appId:"1:160255207915:web:ce8e69d43f62daf476d1ae", 
+  measurementId:"G-GYPNMR85G2" 
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-
-// تسجيل دخول بالإيميل
-window.loginWithEmail = function(e) {
-  e.preventDefault();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-
-  if(!email || !password) { alert("الرجاء إدخال البريد وكلمة المرور"); return; }
-
-  signInWithEmailAndPassword(auth, email, password)
-    .then(userCredential => {
-      alert("تم تسجيل الدخول: " + userCredential.user.email);
-      window.location.href = "profile.html";
-    })
-    .catch(error => alert("خطأ: " + error.message));
-};
-
-// تسجيل دخول جوجل
 const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: "select_account" });
 
-window.loginWithGoogle = async function () {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    alert("مرحبًا " + result.user.displayName + " 🎉");
-    window.location.href = "profile.html";
-  } catch (error) {
-    alert("خطأ: " + error.message);
+// ✅ الترجمة
+const translations = {
+  en: {
+    title: "Login",
+    email: "Email",
+    password: "Password",
+    loginBtn: "Login",
+    forgot: "Forgot password?",
+    google: "Sign in with Google",
+    noAccount: "Don't have an account?",
+    signup: "Create new account"
+  },
+  ar: {
+    title: "تسجيل دخول",
+    email: "البريد الإلكتروني",
+    password: "كلمة المرور",
+    loginBtn: "تسجيل دخول",
+    forgot: "نسيت كلمة المرور؟",
+    google: "تسجيل دخول باستخدام Google",
+    noAccount: "ما عندكش حساب؟",
+    signup: "إنشاء حساب جديد"
   }
 };
 
-// إعادة تعيين كلمة المرور
-window.resetPassword = function () {
-  const email = document.getElementById("email").value.trim();
-  if (!email) { alert("ادخل بريدك الإلكتروني"); return; }
+// ✅ اللغة الحالية
+let currentLang = "en";
 
-  sendPasswordResetEmail(auth, email)
-    .then(() => alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى " + email))
-    .catch(error => alert("خطأ: " + error.message));
-};
+// تسجيل دخول بالإيميل
+window.loginWithEmail = e => {
+  e.preventDefault();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  if(!email || !password){ alert("Please enter email and password"); return; }
+  signInWithEmailAndPassword(auth,email,password)
+    .then(u=>window.location.href="profile.html")
+    .catch(err=>alert(err.message));
+}
+
+// Google Sign-In
+window.loginWithGoogle = async () => {
+  try { await signInWithPopup(auth,provider); window.location.href="profile.html"; } 
+  catch(err){ alert(err.message); }
+}
+
+// Reset Password
+window.resetPassword = () => {
+  const email = document.getElementById("email").value.trim();
+  if(!email){ alert("Enter your email"); return; }
+  sendPasswordResetEmail(auth,email).then(()=>alert("Reset link sent")).catch(err=>alert(err.message));
+}
 
 // تغيير اللغة
-window.changeLanguage = function(lang){
+window.changeLanguage = (lang)=>{
+  currentLang = lang;
   document.documentElement.lang = lang;
-  document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.body.dir = (lang==="ar")?"rtl":"ltr";
+
+  const t = translations[lang];
+  document.getElementById("title").textContent = t.title;
+  document.getElementById("email").placeholder = t.email;
+  document.getElementById("password").placeholder = t.password;
+  document.getElementById("login-btn").textContent = t.loginBtn;
+  document.getElementById("forgot-link").textContent = t.forgot;
+  document.getElementById("google-btn-text").textContent = t.google;
+  document.getElementById("no-account").textContent = t.noAccount;
+  document.getElementById("signup-link").textContent = t.signup;
 }
 </script>
 </head>
@@ -73,32 +97,32 @@ window.changeLanguage = function(lang){
 
 <div class="language-selector">
   <select onchange="changeLanguage(this.value)">
-    <option value="ar" selected>العربية</option>
-    <option value="en">English</option>
+    <option value="en" selected>English</option>
+    <option value="ar">العربية</option>
   </select>
 </div>
 
 <div class="card">
-  <h2>تسجيل دخول</h2>
+  <h2 id="title">Login</h2>
   <form onsubmit="loginWithEmail(event)">
-    <input type="email" id="email" placeholder="البريد الإلكتروني" required>
-    <input type="password" id="password" placeholder="كلمة المرور" required>
-    <button type="submit" id="login-btn">تسجيل دخول</button>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit" id="login-btn">Login</button>
   </form>
 
   <div class="forgot-password">
-    <a href="#" onclick="resetPassword()">نسيت كلمة المرور؟</a>
+    <a href="#" id="forgot-link" onclick="resetPassword()">Forgot password?</a>
   </div>
 
   <hr>
 
   <button class="google-btn" onclick="loginWithGoogle()">
     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
-    <span>تسجيل دخول باستخدام Google</span>
+    <span id="google-btn-text">Sign in with Google</span>
   </button>
 
   <div class="signup-link">
-    <p>ما عندكش حساب؟ <a href="register.html">إنشاء حساب جديد</a></p>
+    <p id="no-account">Don't have an account? <a href="register.html" id="signup-link">Create new account</a></p>
   </div>
 </div>
 
