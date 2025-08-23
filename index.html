@@ -1,136 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Kalk.Bot - Login</title>
-  <link rel="stylesheet" href="alloush.css">
-  <script type="module">
-    // Firebase Import
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { 
-      getAuth, 
-      signInWithEmailAndPassword, 
-      sendPasswordResetEmail 
-    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { 
-      getFirestore, 
-      collection, 
-      query, 
-      where, 
-      getDocs 
-    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+<meta charset="UTF-8" />
+<title>Kalk.Bot - Login</title>
+<link rel="stylesheet" href="alloush.css" />
+<script type="module">
+  // ---- Firebase ----
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey:"AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
-      authDomain:"fir-dba4c.firebaseapp.com",
-      projectId:"fir-dba4c",
-      storageBucket:"fir-dba4c.firebasestorage.app",
-      messagingSenderId:"160255207915",
-      appId:"1:160255207915:web:ce8e69d43f62daf476d1ae",
-      measurementId:"G-GYPNMR85G2"
-    };
+  // 🔧 ضيف بيانات مشروعك هنا (storageBucket الصحيح عادة: <project-id>.appspot.com)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+    authDomain: "fir-dba4c.firebaseapp.com",
+    projectId: "fir-dba4c",
+    storageBucket: "fir-dba4c.appspot.com",
+    messagingSenderId: "160255207915",
+    appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
+    measurementId: "G-GYPNMR85G2"
+  };
 
-    // Init Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    // ✅ الترجمة
-    const translations = {
-      en: {
-        title: "Login",
-        identifier: "Email / Username / Phone",
-        password: "Password",
-        loginBtn: "Login",
-        forgot: "Forgot password?",
-        noAccount: "Don't have an account?",
-        signup: "Create new account"
-      },
-      ar: {
-        title: "تسجيل دخول",
-        identifier: "البريد / اسم المستخدم / الهاتف",
-        password: "كلمة المرور",
-        loginBtn: "تسجيل دخول",
-        forgot: "نسيت كلمة المرور؟",
-        noAccount: "ما عندكش حساب؟",
-        signup: "إنشاء حساب جديد"
+  // ---------- ترجمة ----------
+  const translations = {
+    en: {
+      title: "Login",
+      identifier: "Email / Username / Phone",
+      password: "Password",
+      loginBtn: "Login",
+      forgot: "Forgot password?",
+      noAccount: "Don't have an account?",
+      signup: "Create new account",
+      missing: "Please enter all fields",
+      nf: "User not found",
+      perm: "Cannot read user index (permissions). See Firestore rules below.",
+      resetNeedEmail: "Enter your email to reset password",
+      resetSent: "Reset link sent to your email",
+      unknownErr: "Something went wrong"
+    },
+    ar: {
+      title: "تسجيل دخول",
+      identifier: "الإيميل / اسم المستخدم / الهاتف",
+      password: "كلمة المرور",
+      loginBtn: "تسجيل دخول",
+      forgot: "نسيت كلمة المرور؟",
+      noAccount: "ما عندكش حساب؟",
+      signup: "إنشاء حساب جديد",
+      missing: "من فضلك اكتب جميع الحقول",
+      nf: "المستخدم غير موجود",
+      perm: "لا يمكن قراءة فهرس المستخدمين (الصلاحيات). راجع قواعد Firestore بالأسفل.",
+      resetNeedEmail: "أدخل بريدك الإلكتروني لاسترجاع كلمة المرور",
+      resetSent: "تم إرسال رابط الاسترجاع لبريدك",
+      unknownErr: "حدث خطأ غير متوقع"
+    }
+  };
+  let currentLang = "en";
+
+  // ---- أدوات مساعدة ----
+  const normalizePhone = (v) => v.replace(/[^\d]/g, ""); // شيل أي رموز
+  const looksLikeEmail = (v) => v.includes("@");
+  const looksLikePhone = (v) => {
+    const d = normalizePhone(v);
+    return d.length >= 7 && d.length <= 15;
+  };
+
+  // هنجيب الإيميل من user_index:
+  // - username:<lowercase>  -> { email }
+  // - phone:<digits_only>   -> { email }
+  async function getEmailFromIdentifier(identifier) {
+    // لو إيميل.. خلاص
+    if (looksLikeEmail(identifier)) return identifier.trim();
+
+    let key;
+    if (looksLikePhone(identifier)) {
+      key = `phone:${normalizePhone(identifier)}`;
+    } else {
+      key = `username:${identifier.trim().toLowerCase()}`;
+    }
+
+    try {
+      const ref = doc(db, "user_index", key);
+      const snap = await getDoc(ref);
+      if (snap.exists() && snap.data().email) {
+        return snap.data().email;
       }
-    };
+      return null;
+    } catch (e) {
+      console.error(e);
+      throw new Error("PERMISSION");
+    }
+  }
 
-    let currentLang = "en";
+  // ---- تسجيل الدخول ----
+  window.loginUnified = async (e) => {
+    e.preventDefault();
+    const t = translations[currentLang];
 
-    // ✅ تسجيل دخول
-    window.loginWithEmailOrUsername = async (e) => {
-      e.preventDefault();
-      const identifier = document.getElementById("identifier").value.trim();
-      const password = document.getElementById("password").value;
+    const identifier = document.getElementById("identifier").value.trim();
+    const password = document.getElementById("password").value;
 
-      if (!identifier || !password) {
-        alert("Please enter all fields");
+    if (!identifier || !password) {
+      alert(t.missing);
+      return;
+    }
+
+    let emailToLogin = null;
+    try {
+      emailToLogin = await getEmailFromIdentifier(identifier);
+    } catch (err) {
+      if (err.message === "PERMISSION") {
+        alert(t.perm);
         return;
       }
+      alert(t.unknownErr);
+      return;
+    }
 
-      let emailToLogin = identifier;
+    if (!emailToLogin) {
+      alert(t.nf);
+      return;
+    }
 
-      // 📌 لو كتب يوزر نيم أو رقم موبايل → نجيب الإيميل من Firestore
-      if (!identifier.includes("@")) {
-        const usersRef = collection(db, "users");
-        let q;
+    try {
+      await signInWithEmailAndPassword(auth, emailToLogin, password);
+      window.location.href = "profile.html";
+    } catch (err) {
+      alert(err.message || t.unknownErr);
+    }
+  };
 
-        if (/^\d+$/.test(identifier)) {
-          // رقم هاتف
-          q = query(usersRef, where("phone", "==", identifier));
-        } else {
-          // يوزر نيم
-          q = query(usersRef, where("username", "==", identifier));
-        }
+  // ---- استرجاع كلمة المرور (يحتاج إيميل صريح) ----
+  window.resetPassword = async () => {
+    const t = translations[currentLang];
+    const identifier = document.getElementById("identifier").value.trim();
+    if (!looksLikeEmail(identifier)) {
+      alert(t.resetNeedEmail);
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, identifier);
+      alert(t.resetSent);
+    } catch (err) {
+      alert(err.message || t.unknownErr);
+    }
+  };
 
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          emailToLogin = querySnapshot.docs[0].data().email;
-        } else {
-          alert("User not found");
-          return;
-        }
-      }
+  // ---- تغيير اللغة ----
+  window.changeLanguage = (lang) => {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.body.dir = lang === "ar" ? "rtl" : "ltr";
 
-      // تسجيل الدخول بالإيميل وكلمة السر
-      signInWithEmailAndPassword(auth, emailToLogin, password)
-        .then(() => {
-          window.location.href = "profile.html";
-        })
-        .catch(err => alert(err.message));
-    };
+    const tt = translations[lang];
+    document.getElementById("title").textContent = tt.title;
+    document.getElementById("identifier").placeholder = tt.identifier;
+    document.getElementById("password").placeholder = tt.password;
+    document.getElementById("login-btn").textContent = tt.loginBtn;
+    document.getElementById("forgot-link").textContent = tt.forgot;
+    document.getElementById("no-account").firstChild.textContent = tt.noAccount + " ";
+    document.getElementById("signup-link").textContent = tt.signup;
+  };
 
-    // ✅ استرجاع كلمة المرور
-    window.resetPassword = () => {
-      const identifier = document.getElementById("identifier").value.trim();
-      if (!identifier.includes("@")) {
-        alert("Please enter your email to reset password");
-        return;
-      }
-      sendPasswordResetEmail(auth, identifier)
-        .then(() => alert("Reset link sent to your email"))
-        .catch(err => alert(err.message));
-    };
-
-    // ✅ تغيير اللغة
-    window.changeLanguage = (lang) => {
-      currentLang = lang;
-      document.documentElement.lang = lang;
-      document.body.dir = (lang === "ar") ? "rtl" : "ltr";
-
-      const t = translations[lang];
-      document.getElementById("title").textContent = t.title;
-      document.getElementById("identifier").placeholder = t.identifier;
-      document.getElementById("password").placeholder = t.password;
-      document.getElementById("login-btn").textContent = t.loginBtn;
-      document.getElementById("forgot-link").textContent = t.forgot;
-      document.getElementById("no-account").textContent = t.noAccount;
-      document.getElementById("signup-link").textContent = t.signup;
-    };
-  </script>
+  // set default UI
+  window.addEventListener("DOMContentLoaded", () => changeLanguage("en"));
+</script>
 </head>
 <body>
   <div class="language-selector">
@@ -142,18 +179,20 @@
 
   <div class="card">
     <h2 id="title">Login</h2>
-    <form onsubmit="loginWithEmailOrUsername(event)">
-      <input type="text" id="identifier" placeholder="Email / Username / Phone" required>
-      <input type="password" id="password" placeholder="Password" required>
+    <form onsubmit="loginUnified(event)">
+      <input type="text" id="identifier" placeholder="Email / Username / Phone" required />
+      <input type="password" id="password" placeholder="Password" required />
       <button type="submit" id="login-btn">Login</button>
     </form>
 
     <div class="forgot-password">
       <a href="#" id="forgot-link" onclick="resetPassword()">Forgot password?</a>
     </div>
-    <hr>
+
+    <hr />
+
     <div class="signup-link">
-      <p id="no-account">Don't have an account? 
+      <p id="no-account">Don't have an account?
         <a href="register.html" id="signup-link">Create new account</a>
       </p>
     </div>
