@@ -15,15 +15,34 @@ const firebaseConfig = {
   projectId: "fir-dba4c",
   storageBucket: "fir-dba4c.firebasestorage.app",
   messagingSenderId: "160255207915",
-  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
-  measurementId: "G-GYPNMR85G2"
+  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-window.signupUser = async function() {
+// ترجمات اللغات
+const translations = {
+  en: { title:"Create Account", email:"Email", password:"Password", phone:"Phone", username:"Username", fullname:"Full Name", birthdate:"Birth Date", signup:"Sign Up", login:"Already have account? Login" },
+  ar: { title:"إنشاء حساب جديد", email:"البريد الإلكتروني", password:"كلمة المرور", phone:"رقم الهاتف", username:"اسم المستخدم", fullname:"الاسم الكامل", birthdate:"تاريخ الميلاد", signup:"إنشاء الحساب", login:"لديك حساب؟ تسجيل الدخول" }
+};
+
+let currentLang = "ar";
+window.changeLanguage = function(lang){
+  currentLang = lang;
+  document.querySelector("#card-title").textContent = translations[lang].title;
+  document.querySelector("#email").placeholder = translations[lang].email;
+  document.querySelector("#password").placeholder = translations[lang].password;
+  document.querySelector("#phone").placeholder = translations[lang].phone;
+  document.querySelector("#username").placeholder = translations[lang].username;
+  document.querySelector("#fullname").placeholder = translations[lang].fullname;
+  document.querySelector("#birthdate").placeholder = translations[lang].birthdate;
+  document.querySelector("#signup-btn").textContent = translations[lang].signup;
+  document.querySelector("#login-btn").textContent = translations[lang].login;
+};
+
+window.signupUser = async function(){
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
   const phone = document.getElementById("phone").value.trim();
@@ -31,48 +50,28 @@ window.signupUser = async function() {
   const fullname = document.getElementById("fullname").value.trim();
   const birthdate = document.getElementById("birthdate").value;
 
-  if(!email || !password || !phone || !username || !fullname || !birthdate){
-      return alert("جميع الحقول مطلوبة!");
+  if(!email||!password||!phone||!username||!fullname||!birthdate){
+    return alert("جميع الحقول مطلوبة!");
+  }
+  if(!phone.startsWith("+") || phone.replace(/\D/g,'').length<5){
+    return alert("رقم الهاتف غير صحيح.");
   }
 
-  if(!phone.startsWith("+") || phone.replace(/\D/g,'').length < 5){
-      return alert("رقم الهاتف غير صحيح. يجب كتابة رمز الدولة ورقم الهاتف كاملًا.");
-  }
-
-  try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "users", user.uid), {
-          email,
-          phone,
-          username,
-          fullname,
-          birthdate,
-          balance: 0,
-          subscription: null
-      });
-
-      alert("تم إنشاء الحساب بنجاح ✅ يمكنك تسجيل الدخول مباشرة.");
-      window.location.href = "index.html";
-
-  } catch(error){
-      alert("حدث خطأ: " + error.message);
+  try{
+    const userCredential = await createUserWithEmailAndPassword(auth,email,password);
+    const user = userCredential.user;
+    await setDoc(doc(db,"users",user.uid),{email,phone,username,fullname,birthdate,balance:0,subscription:null});
+    alert("تم إنشاء الحساب بنجاح ✅");
+    window.location.href="index.html";
+  }catch(error){
+    alert("حدث خطأ: "+error.message);
   }
 }
 
-window.changeLanguage = function(lang){
-  document.documentElement.lang = lang;
-  document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
-}
-
-window.goToLogin = function(){
-  window.location.href = "index.html";
-}
+window.goToLogin = function(){ window.location.href="index.html"; }
 </script>
 </head>
 <body>
-
 <div class="language-selector">
   <select onchange="changeLanguage(this.value)">
     <option value="ar" selected>العربية</option>
@@ -81,18 +80,16 @@ window.goToLogin = function(){
 </div>
 
 <div class="card">
-  <h2>إنشاء حساب جديد</h2>
-  <form onsubmit="event.preventDefault(); signupUser();">
-    <input type="email" id="email" placeholder="البريد الإلكتروني" required>
-    <input type="password" id="password" placeholder="كلمة المرور" required>
-    <input type="text" id="phone" placeholder="+20123456789 رقم الهاتف" required>
-    <input type="text" id="username" placeholder="اسم المستخدم" required>
-    <input type="text" id="fullname" placeholder="الاسم الكامل" required>
-    <input type="date" id="birthdate" required>
-    <button id="signup-btn" type="submit">إنشاء الحساب</button>
-  </form>
-  <button id="login-btn" class="secondary small" onclick="goToLogin()">لديك حساب؟ تسجيل الدخول</button>
-</div>
+<h2 id="card-title">إنشاء حساب جديد</h2>
+<div class="input-group"><input type="email" id="email" placeholder="البريد الإلكتروني" required><span>📧</span></div>
+<div class="input-group"><input type="password" id="password" placeholder="كلمة المرور" required><span>🔒</span></div>
+<div class="input-group"><input type="text" id="phone" placeholder="رقم الهاتف" required><span>📱</span></div>
+<div class="input-group"><input type="text" id="username" placeholder="اسم المستخدم" required><span>👤</span></div>
+<div class="input-group"><input type="text" id="fullname" placeholder="الاسم الكامل" required><span>📝</span></div>
+<div class="input-group"><input type="date" id="birthdate" required><span>🎂</span></div>
 
+<button id="signup-btn" onclick="signupUser()">إنشاء الحساب</button>
+<button id="login-btn" class="secondary" onclick="goToLogin()">لديك حساب؟ تسجيل الدخول</button>
+</div>
 </body>
 </html>
