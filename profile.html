@@ -7,9 +7,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
       authDomain: "fir-dba4c.firebaseapp.com",
@@ -24,8 +23,9 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     let currentUser = null;
+    let currentLang = "en";
 
-    // ✅ الترجمة
+    // ترجمات
     const translations = {
       en: {
         username: "Username",
@@ -49,8 +49,8 @@
         cancel: "Cancel",
         botData: "Bot Data",
         edit: "Edit Profile",
-        back: "Back",
-        logout: "Logout"
+        logout: "Logout",
+        insufficient: "Insufficient balance!"
       },
       ar: {
         username: "اسم المستخدم",
@@ -74,12 +74,12 @@
         cancel: "إلغاء",
         botData: "بيانات البوت",
         edit: "تعديل الحساب",
-        back: "رجوع",
-        logout: "تسجيل الخروج"
+        logout: "تسجيل الخروج",
+        insufficient: "الرصيد غير كافي!"
       }
     };
 
-    // ✅ تحميل بيانات المستخدم
+    // تحميل بيانات المستخدم
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
@@ -95,6 +95,7 @@
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
+        const t = translations[currentLang];
         document.getElementById("username").textContent = data.username || "N/A";
         document.getElementById("fullname").textContent = data.fullname || "N/A";
         document.getElementById("email").textContent = data.email;
@@ -103,20 +104,18 @@
         document.getElementById("balance").textContent = (data.balance || 0).toFixed(2) + " $";
         document.getElementById("subscription").textContent = data.subscription || "None";
         document.getElementById("end-date").textContent = data.endDate || "N/A";
-        document.getElementById("bot-status").textContent = data.botActive ? translations[currentLang].active : translations[currentLang].inactive;
+        document.getElementById("bot-status").textContent = data.botActive ? t.active : t.inactive;
 
         document.getElementById("profile-pic").src = data.photoURL || "https://via.placeholder.com/150";
       }
     }
 
-    // ✅ تغيير اللغة
-    let currentLang = "en";
-    window.changeLanguage = function (lang) {
+    // تغيير اللغة
+    window.changeLanguage = function(lang) {
       currentLang = lang;
       document.documentElement.lang = lang;
       const t = translations[lang];
 
-      // تحديث النصوص
       document.querySelector("[data-username-label]").textContent = t.username;
       document.querySelector("[data-fullname-label]").textContent = t.fullname;
       document.querySelector("[data-email-label]").textContent = t.email;
@@ -138,28 +137,54 @@
       document.getElementById("cancel-btn").textContent = t.cancel;
       document.getElementById("bot-btn").textContent = t.botData;
       document.getElementById("edit-btn").textContent = t.edit;
-      document.getElementById("back-btn").textContent = t.back;
       document.getElementById("logout-btn").textContent = t.logout;
 
-      // تحديث حالة البوت بعد تغيير اللغة
       loadUserData();
     };
 
-    // ✅ أزرار التحكم
-    window.logout = async function () {
-      await signOut(auth);
-      window.location.href = "index.html";
+    // دفع الاشتراك من الرصيد
+    window.renewSub = async function(months) {
+      if (!currentUser) return;
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) return alert(translations[currentLang].insufficient);
+
+      const data = docSnap.data();
+      let cost = months === 1 ? 2.5 : months === 3 ? 7.5 : 30;
+      if ((data.balance || 0) < cost) return alert(translations[currentLang].insufficient);
+
+      const newBalance = (data.balance || 0) - cost;
+      await updateDoc(docRef, {
+        balance: newBalance,
+        subscription: months + (currentLang === "ar" ? " شهر" : " Month"),
+        endDate: calculateEndDate(months)
+      });
+      alert(currentLang === "ar" ? "تم تجديد الاشتراك!" : "Subscription renewed!");
+      loadUserData();
+    };
+
+    function calculateEndDate(months) {
+      const now = new Date();
+      now.setMonth(now.getMonth() + months);
+      return now.toLocaleDateString(currentLang === "ar" ? "ar-EG" : "en-US");
     }
-    window.goToBot = function () { window.location.href = "botData.html"; }
-    window.goToEditProfile = function () { window.location.href = "edit-profile.html"; }
-    window.goBack = function () { window.history.back(); }
-    window.renewSub = function (months) { window.location.href = "recharge.html?months=" + months; }
-    window.cancelSub = function () { window.location.href = "recharge.html?cancel=true"; }
-    window.recharge = function () { window.location.href = "recharge.html"; }
+
+    window.cancelSub = async function() {
+      if (!currentUser) return;
+      const docRef = doc(db, "users", currentUser.uid);
+      await updateDoc(docRef, { subscription: "", endDate: "" });
+      alert(currentLang === "ar" ? "تم إلغاء الاشتراك!" : "Subscription cancelled!");
+      loadUserData();
+    };
+
+    // الأزرار الأساسية
+    window.logout = async function() { await signOut(auth); window.location.href = "index.html"; }
+    window.goToBot = function() { window.location.href = "botData.html"; }
+    window.goToEditProfile = function() { window.location.href = "edit-profile.html"; }
+    window.recharge = function() { window.location.href = "recharge.html"; }
   </script>
 </head>
 <body>
-  <!-- ✅ Language Selector -->
   <div class="language-selector">
     <select onchange="changeLanguage(this.value)">
       <option value="en" selected>English</option>
@@ -170,38 +195,18 @@
   <div class="card">
     <img id="profile-pic" class="profile-pic" src="https://via.placeholder.com/150" alt="Profile Picture">
 
-    <!-- ✅ بيانات المستخدم -->
     <div class="data-grid">
-      <div class="data-box"><span class="data-icon">👤</span>
-        <div><p data-username-label>Username:</p><p id="username">Loading...</p></div>
-      </div>
-      <div class="data-box"><span class="data-icon">📝</span>
-        <div><p data-fullname-label>Full Name:</p><p id="fullname">Loading...</p></div>
-      </div>
-      <div class="data-box"><span class="data-icon">📧</span>
-        <div><p data-email-label>Email:</p><p id="email">Loading...</p></div>
-      </div>
-      <div class="data-box"><span class="data-icon">📱</span>
-        <div><p data-phone-label>Phone:</p><p id="phone">Loading...</p></div>
-      </div>
-      <div class="data-box"><span class="data-icon">🎂</span>
-        <div><p data-birthdate-label>Birth Date:</p><p id="birthdate">Loading...</p></div>
-      </div>
-      <div class="data-box"><span class="data-icon">💰</span>
-        <div><p data-balance-label>Balance:</p><p id="balance">Loading...</p></div>
-      </div>
-      <div class="data-box"><span class="data-icon">🗓️</span>
-        <div><p data-subscription-label>Subscription:</p><p id="subscription">Loading...</p></div>
-      </div>
-      <div class="data-box"><span class="data-icon">⏳</span>
-        <div><p data-enddate-label>End Date:</p><p id="end-date">Loading...</p></div>
-      </div>
-      <div class="data-box"><span class="data-icon">🤖</span>
-        <div><p data-botstatus-label>Bot Status:</p><p id="bot-status">Loading...</p></div>
-      </div>
+      <div class="data-box"><span class="data-icon">👤</span><div><p data-username-label>Username:</p><p id="username">Loading...</p></div></div>
+      <div class="data-box"><span class="data-icon">📝</span><div><p data-fullname-label>Full Name:</p><p id="fullname">Loading...</p></div></div>
+      <div class="data-box"><span class="data-icon">📧</span><div><p data-email-label>Email:</p><p id="email">Loading...</p></div></div>
+      <div class="data-box"><span class="data-icon">📱</span><div><p data-phone-label>Phone:</p><p id="phone">Loading...</p></div></div>
+      <div class="data-box"><span class="data-icon">🎂</span><div><p data-birthdate-label>Birth Date:</p><p id="birthdate">Loading...</p></div></div>
+      <div class="data-box"><span class="data-icon">💰</span><div><p data-balance-label>Balance:</p><p id="balance">Loading...</p></div></div>
+      <div class="data-box"><span class="data-icon">🗓️</span><div><p data-subscription-label>Subscription:</p><p id="subscription">Loading...</p></div></div>
+      <div class="data-box"><span class="data-icon">⏳</span><div><p data-enddate-label>End Date:</p><p id="end-date">Loading...</p></div></div>
+      <div class="data-box"><span class="data-icon">🤖</span><div><p data-botstatus-label>Bot Status:</p><p id="bot-status">Loading...</p></div></div>
     </div>
 
-    <!-- ✅ أقسام -->
     <div class="section">
       <h3 id="recharge-title">Recharge</h3>
       <button id="recharge-btn" class="btn-success" onclick="recharge()">💳 Recharge</button>
@@ -219,7 +224,6 @@
       <h3 id="account-title">Account</h3>
       <button id="bot-btn" class="btn-primary" onclick="goToBot()">Bot Data</button>
       <button id="edit-btn" class="btn-primary" onclick="goToEditProfile()">Edit Profile</button>
-      <button id="back-btn" class="btn-secondary" onclick="goBack()">Back</button>
       <button id="logout-btn" class="btn-danger" onclick="logout()">Logout</button>
     </div>
   </div>
