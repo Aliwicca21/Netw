@@ -1,0 +1,115 @@
+/* ali.e.css */
+
+/* Reset بعض الخصائص الأساسية */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #f0f2f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  direction: rtl; /* افتراضي عربي */
+}
+
+/* Selector اللغة */
+.language-selector {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.language-selector select {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* الكرت يملأ الشاشة تقريبا */
+.card {
+  background: #fff;
+  width: 100%;
+  max-width: 500px;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+/* العنوان */
+.card h2 {
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
+
+/* الحقول */
+.card input[type="text"],
+.card input[type="email"],
+.card input[type="password"],
+.card input[type="date"] {
+  width: 100%;
+  padding: 12px 15px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+/* الأزرار */
+.card button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.card button:hover {
+  opacity: 0.9;
+}
+
+/* زر إنشاء الحساب */
+.card button#submit-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* زر الانتقال لتسجيل الدخول */
+.card button#login-btn {
+  background-color: #2196F3;
+  color: white;
+}
+
+/* إضافات للأزرار الثانوية */
+button.secondary {
+  background: #eee;
+  color: #333;
+}
+
+button.secondary:hover {
+  background: #ddd;
+}
+
+/* Responsive للشاشات الصغيرة */
+@media (max-width: 600px) {
+  .card {
+    padding: 20px;
+    width: 90%;
+  }
+  .card input, .card button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
