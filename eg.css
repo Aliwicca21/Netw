@@ -18,12 +18,29 @@ body {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(15px);
     border-radius: 20px;
-    padding: 40px 30px;
-    width: 400px;
+    padding: 50px 30px 30px 30px;
+    width: 450px;
     max-width: 90%;
     box-shadow: 0 15px 35px rgba(0,0,0,0.3);
     text-align: center;
     animation: fadeIn 1s ease-in-out;
+    position: relative;
+}
+
+/* اسم Kalk.Bot بارز أعلى الكارد */
+.card::before {
+    content: "Kalk.Bot";
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    padding: 8px 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.4);
 }
 
 /* صورة البروفايل */
@@ -57,12 +74,27 @@ h3 {
     text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 
-/* الفقرات */
+/* الفقرات مع إيموجي */
 p {
     margin: 8px 0;
     font-size: 16px;
     line-height: 1.5;
 }
+
+p strong::before {
+    content: "⭐ "; /* نجمة افتراضية قبل كل خانة */
+}
+
+/* يمكن تخصيص إيموجي لكل خانة حسب المحتوى */
+#username::before { content: "👤 "; }
+#fullname::before { content: "📝 "; }
+#email::before { content: "📧 "; }
+#phone::before { content: "📱 "; }
+#birthdate::before { content: "🎂 "; }
+#balance::before { content: "💰 "; }
+#subscription::before { content: "🗓️ "; }
+#end-date::before { content: "⏳ "; }
+#bot-status::before { content: "🤖 "; }
 
 /* الأقسام */
 .section {
