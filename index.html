@@ -2,17 +2,11 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>تسجيل دخول</title>
-  <link rel="stylesheet" href="alloush.css">
+<title>Kalk.Bot - تسجيل دخول</title>
+<link rel="stylesheet" href="alloush.css">
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  GoogleAuthProvider, 
-  signInWithPopup,
-  sendPasswordResetEmail
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
 // إعداد Firebase
 const firebaseConfig = {
@@ -31,18 +25,20 @@ const auth = getAuth(app);
 // تسجيل دخول بالإيميل
 window.loginWithEmail = function(e) {
   e.preventDefault();
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
+  if(!email || !password) { alert("الرجاء إدخال البريد وكلمة المرور"); return; }
+
   signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
+    .then(userCredential => {
       alert("تم تسجيل الدخول: " + userCredential.user.email);
-      window.location.href = "profile.html"; 
+      window.location.href = "profile.html";
     })
-    .catch((error) => alert("خطأ: " + error.message));
+    .catch(error => alert("خطأ: " + error.message));
 };
 
-// Google Sign-In
+// تسجيل دخول جوجل
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
@@ -53,28 +49,41 @@ window.loginWithGoogle = async function () {
     window.location.href = "profile.html";
   } catch (error) {
     alert("خطأ: " + error.message);
-    console.error(error);
   }
 };
 
 // إعادة تعيين كلمة المرور
 window.resetPassword = function () {
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("email").value.trim();
   if (!email) { alert("ادخل بريدك الإلكتروني"); return; }
 
   sendPasswordResetEmail(auth, email)
     .then(() => alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى " + email))
-    .catch((error) => alert("خطأ: " + error.message));
+    .catch(error => alert("خطأ: " + error.message));
 };
+
+// تغيير اللغة
+window.changeLanguage = function(lang){
+  document.documentElement.lang = lang;
+  document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+}
 </script>
 </head>
 <body>
+
+<div class="language-selector">
+  <select onchange="changeLanguage(this.value)">
+    <option value="ar" selected>العربية</option>
+    <option value="en">English</option>
+  </select>
+</div>
+
 <div class="card">
   <h2>تسجيل دخول</h2>
   <form onsubmit="loginWithEmail(event)">
     <input type="email" id="email" placeholder="البريد الإلكتروني" required>
     <input type="password" id="password" placeholder="كلمة المرور" required>
-    <button type="submit">تسجيل دخول</button>
+    <button type="submit" id="login-btn">تسجيل دخول</button>
   </form>
 
   <div class="forgot-password">
@@ -92,5 +101,6 @@ window.resetPassword = function () {
     <p>ما عندكش حساب؟ <a href="register.html">إنشاء حساب جديد</a></p>
   </div>
 </div>
+
 </body>
 </html>
