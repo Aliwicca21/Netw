@@ -1,13 +1,5 @@
 /* auth.css */
 
-/* ===== Reset ===== */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-}
-
 /* ===== Body ===== */
 body {
   background: linear-gradient(135deg, #f8f9fa, #e0f7fa);
@@ -15,19 +7,22 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 20px;
-  position: relative;
+  padding: 0; /* حذف البادينج */
 }
 
-/* ===== Card ===== */
+/* ===== Card Full Screen ===== */
 .card {
   background: #fff;
-  border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  padding: 30px 25px;
+  border-radius: 0; /* نلغي الزوايا */
+  box-shadow: none; /* بدون ظل */
+  padding: 40px 20px;
   width: 100%;
-  max-width: 450px;
-  position: relative;
+  height: 100vh; /* يملأ طول الشاشة */
+  max-width: 100%; /* نلغي الحد الأقصى للعرض */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* لتوسيط المحتوى رأسياً */
+  align-items: center;
 }
 
 /* ===== Form Title ===== */
@@ -36,9 +31,10 @@ body {
   margin-bottom: 25px;
   color: #333;
   font-weight: bold;
+  font-size: 28px;
 }
 
-/* ===== Input Groups with Icons ===== */
+/* ===== Input Groups ===== */
 .input-group {
   display: flex;
   align-items: center;
@@ -47,7 +43,8 @@ body {
   border-radius: 8px;
   overflow: hidden;
   background: #fafafa;
-  transition: 0.3s;
+  width: 90%; /* يملأ معظم عرض الكرت */
+  max-width: 500px;
 }
 
 .input-group span {
@@ -60,80 +57,20 @@ body {
   border: none;
   flex: 1;
   padding: 12px;
-  font-size: 14px;
+  font-size: 16px;
   outline: none;
   background: transparent;
 }
 
-/* ===== Input Focus ===== */
-.input-group:focus-within {
-  border: 1px solid #4CAF50;
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-}
-
-/* ===== Buttons ===== */
+/* ===== Buttons Full Width ===== */
 button {
-  width: 100%;
-  padding: 12px;
+  width: 90%; /* نفس عرض الحقول */
+  max-width: 500px;
+  padding: 14px;
   font-size: 16px;
   border-radius: 8px;
   cursor: pointer;
   border: none;
   margin-top: 10px;
   transition: 0.3s;
-}
-
-/* زر التسجيل */
-.btn-success {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.btn-success:hover {
-  background-color: #45a049;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* زر تسجيل الدخول */
-button.secondary {
-  background-color: #007bff;
-  color: white;
-}
-
-button.secondary:hover {
-  background-color: #0069d9;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* ===== Language Selector ===== */
-.language-selector {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-}
-
-.language-selector select {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  background: #fff;
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 500px) {
-  .card {
-    padding: 20px;
-  }
-  .input-group span {
-    padding: 0 8px;
-  }
-  .input-group input {
-    font-size: 13px;
-    padding: 10px;
-  }
-  button {
-    font-size: 14px;
-    padding: 10px;
-  }
 }
