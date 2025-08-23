@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>شحن الرصيد</title>
+  <title>Kalk.Bot - Recharge Balance</title>
   <link rel="stylesheet" href="star.css">
   <script src="https://www.paypal.com/sdk/js?client-id=AZ44qaQI2dxTksnrqKU4gT1rL1HXZbWFmk2fqM5thehRfuWiL4DQI0ZP7dIISJwAoiO4qrP9D4Iw1a_i&currency=USD"></script>
   <script type="module">
@@ -40,17 +40,12 @@
       const oldBalance = userSnap.data().balance || 0;
       const newBalance = oldBalance + amount;
       await updateDoc(userRef, { balance: newBalance });
-      alert("تم إضافة " + amount + "$ إلى رصيدك ✅");
+      alert(translations[currentLang].added + " " + amount + "$ ✅");
     }
 
     function createPayPalButton(amount) {
       paypal.Buttons({
-        style: {
-          shape: 'rect',
-          color: 'gold',
-          layout: 'vertical',
-          label: 'pay'
-        },
+        style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'pay' },
         createOrder: function(data, actions) {
           return actions.order.create({
             purchase_units: [{ amount: { value: amount.toFixed(2) } }]
@@ -59,7 +54,7 @@
         onApprove: function(data, actions) {
           return actions.order.capture().then(function(details) {
             updateBalance(amount);
-            alert("تم الدفع بواسطة " + details.payer.name.given_name);
+            alert(translations[currentLang].paidBy + " " + details.payer.name.given_name);
           });
         }
       }).render('#paypal-button-container');
@@ -68,7 +63,7 @@
     window.startPayment = function() {
       const amountInput = parseFloat(document.getElementById("amount").value);
       if (isNaN(amountInput) || amountInput <= 0) {
-        alert("الرجاء إدخال مبلغ صحيح");
+        alert(translations[currentLang].enterValid);
         return;
       }
       document.getElementById("paypal-button-container").innerHTML = "";
@@ -78,22 +73,69 @@
     window.goBack = function() {
       window.location.href = "profile.html";
     }
+
+    // ----------------
+    // 🔹 دعم اللغات
+    // ----------------
+    const translations = {
+      en: {
+        recharge: "Recharge Balance",
+        amount: "Amount ($):",
+        placeholder: "Example: 5",
+        pay: "Pay with PayPal",
+        back: "Back to Profile",
+        enterValid: "Please enter a valid amount",
+        added: "Added to your balance",
+        paidBy: "Payment done by"
+      },
+      ar: {
+        recharge: "شحن الرصيد",
+        amount: "المبلغ بال$:",
+        placeholder: "مثال: 5",
+        pay: "دفع عبر PayPal",
+        back: "العودة إلى الملف الشخصي",
+        enterValid: "الرجاء إدخال مبلغ صحيح",
+        added: "تم إضافة إلى رصيدك",
+        paidBy: "تم الدفع بواسطة"
+      }
+    };
+
+    let currentLang = "en"; // اللغة الأساسية انجليزي
+
+    window.changeLanguage = function(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      document.body.dir = lang === "ar" ? "rtl" : "ltr";
+      document.getElementById("title").innerText = translations[lang].recharge;
+      document.getElementById("amount-label").innerText = translations[lang].amount;
+      document.getElementById("amount").placeholder = translations[lang].placeholder;
+      document.getElementById("pay-btn").innerText = translations[lang].pay;
+      document.getElementById("back-btn").innerText = translations[lang].back;
+    }
   </script>
 </head>
 <body>
-  <div class="card">
-    <h2>شحن الرصيد</h2>
-    <label>المبلغ بال$:</label>
-    <input type="number" id="amount" placeholder="مثال: 5" min="1">
+  <div class="language-selector">
+    <select onchange="changeLanguage(this.value)">
+      <option value="en" selected>English</option>
+      <option value="ar">العربية</option>
+    </select>
+  </div>
 
-    <button onclick="startPayment()" style="padding:10px 20px; background-color:#0070ba; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;">
-      دفع عبر PayPal
+  <div class="card">
+    <h2 id="title">Recharge Balance</h2>
+
+    <label id="amount-label">Amount ($):</label>
+    <input type="number" id="amount" placeholder="Example: 5" min="1">
+
+    <button id="pay-btn" onclick="startPayment()" class="primary-btn">
+      Pay with PayPal
     </button>
 
     <div id="paypal-button-container" style="margin-top:20px;"></div>
 
-    <button onclick="goBack()" style="padding:8px 16px; background-color:gray; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:20px;">
-      العودة إلى الملف الشخصي
+    <button id="back-btn" onclick="goBack()" class="secondary-btn">
+      Back to Profile
     </button>
   </div>
 </body>
