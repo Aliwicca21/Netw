@@ -1,107 +1,75 @@
-/* صفحة كاملة */
-body, html {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #ece9e6, #ffffff);
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
+body{
+  background: linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  direction:rtl;
 }
-
-/* بطاقة الحساب */
-.card {
-  width: 400px;
-  max-width: 90%;
-  background: #fff;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  animation: fadeIn 1s ease forwards;
+.language-selector{
+  position:absolute; top:20px; right:20px;
 }
-
-/* العنوان */
-.card h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
+.language-selector select{
+  padding:6px 12px;
+  border-radius:5px;
+  border:1px solid #ccc;
+  font-size:14px;
 }
-
-/* الحقول */
-.card input {
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  width: 100%;
-  font-size: 16px;
-  transition: 0.3s;
+.card{
+  background:#fff;
+  width:100%;
+  max-width:500px;
+  padding:40px 30px;
+  border-radius:20px;
+  box-shadow:0 15px 35px rgba(0,0,0,0.25);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+  transition:transform 0.3s;
 }
-
-.card input:focus {
-  border-color: #4CAF50;
-  outline: none;
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.4);
+.card:hover{transform:translateY(-5px);}
+.card h2{text-align:center;color:#333;font-size:24px;letter-spacing:1px;}
+.input-group{width:100%;position:relative;}
+.input-group input{
+  width:100%;
+  padding:14px 40px 14px 15px;
+  margin:8px 0;
+  border-radius:12px;
+  border:1px solid #ccc;
+  font-size:16px;
+  transition:0.3s;
 }
-
-/* الأزرار */
-button {
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-  margin-top: 10px;
+.input-group input:focus{
+  border-color:#66a6ff;
+  box-shadow:0 0 8px rgba(102,166,255,0.3);
+  outline:none;
 }
-
-#signup-btn {
-  background: linear-gradient(90deg, #4CAF50, #43a047);
-  color: white;
+.input-group span{
+  position:absolute;
+  top:50%;
+  right:12px;
+  transform:translateY(-50%);
+  font-size:18px;
 }
-
-#signup-btn:hover {
-  background: linear-gradient(90deg, #43a047, #66bb6a);
-  transform: scale(1.05);
+.card button{
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  border:none;
+  border-radius:12px;
+  font-size:16px;
+  cursor:pointer;
+  transition:0.3s;
 }
-
-#login-btn {
-  background: linear-gradient(90deg, #2196F3, #1976d2);
-  color: white;
+.card button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
 }
-
-#login-btn:hover {
-  background: linear-gradient(90deg, #1976d2, #42a5f5);
-  transform: scale(1.05);
-}
-
-/* اللغة */
-.language-selector {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-}
-
-.language-selector select {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.language-selector select:hover {
-  background: #f0f0f0;
-  transform: scale(1.05);
-}
-
-/* Fade In animation */
-@keyframes fadeIn {
-  0% {opacity:0; transform: translateY(-20px);}
-  100% {opacity:1; transform: translateY(0);}
+#signup-btn{background:linear-gradient(90deg,#4CAF50,#43a047);color:white;}
+#login-btn{background:linear-gradient(90deg,#2196F3,#1976d2);color:white;}
+@media(max-width:600px){
+  .card{padding:25px 20px;width:90%;}
+  .card input,.card button{font-size:14px;padding:12px;}
 }
