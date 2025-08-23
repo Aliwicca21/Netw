@@ -3,31 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <title>تعديل الملف الشخصي</title>
-<
+<link rel="stylesheet" href="star.css">
 </head>
 <body>
-<div class="container">
-  <h2>✏️ تعديل الملف الشخصي</h2>
+<div class="language-selector">
+  <select id="lang-select">
+    <option value="ar" selected>العربية</option>
+    <option value="en">English</option>
+  </select>
+</div>
+
+<div class="card">
+  <h2 id="title">✏️ تعديل الملف الشخصي</h2>
   <form id="profile-form">
-    <label>الصورة الشخصية</label>
+    <label id="label-photo">الصورة الشخصية</label>
     <img id="profile-preview" class="profile-preview" src="https://via.placeholder.com/120" alt="معاينة الصورة">
     <input type="file" id="profile-pic" accept="image/*">
     <button type="button" id="remove-pic" class="btn btn-danger">🗑 إزالة الصورة</button>
 
-    <label>الاسم الكامل</label>
-    <input type="text" id="fullname" value="">
+    <label id="label-fullname">الاسم الكامل</label>
+    <input type="text" id="fullname">
 
-    <label>الإيميل</label>
-    <input type="email" id="email" value="">
+    <label id="label-email">الإيميل</label>
+    <input type="email" id="email">
 
-    <label>رقم الهاتف</label>
-    <input type="text" id="phone" value="">
+    <label id="label-phone">رقم الهاتف</label>
+    <input type="text" id="phone">
 
-    <label>تاريخ الميلاد</label>
-    <input type="date" id="birthdate" value="">
+    <label id="label-birthdate">تاريخ الميلاد</label>
+    <input type="date" id="birthdate">
 
-    <button type="submit" class="btn btn-primary">💾 حفظ التعديلات</button>
-    <a href="profile.html" class="btn btn-secondary">↩️ رجوع</a>
+    <button type="submit" class="btn btn-primary" id="save-btn">💾 حفظ التعديلات</button>
+    <a href="profile.html" class="btn btn-secondary" id="back-btn">↩️ رجوع</a>
   </form>
 </div>
 
@@ -46,7 +53,6 @@ const firebaseConfig = {
   appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
   measurementId: "G-GYPNMR85G2"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -60,90 +66,83 @@ const removePicBtn = document.getElementById('remove-pic');
 // معاينة الصورة قبل الحفظ
 profilePicInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
-  if (file) {
+  if(file){
     const reader = new FileReader();
-    reader.onload = function(event) {
-      profilePreview.src = event.target.result;
-    };
+    reader.onload = (event)=> profilePreview.src = event.target.result;
     reader.readAsDataURL(file);
   }
 });
 
-// إزالة الصورة وإرجاع الـ placeholder
-removePicBtn.addEventListener('click', async () => {
-  if (!currentUser) return;
-  const confirmRemove = confirm("هل تريد إزالة الصورة الشخصية؟");
-  if (!confirmRemove) return;
-
-  const storageReference = storageRef(storage, 'profile_pics/' + currentUser.uid);
-  try {
-    await deleteObject(storageReference);
-  } catch(e) {
-    console.warn("لا توجد صورة لحذفها أو حدث خطأ:", e);
-  }
-
-  profilePreview.src = "https://via.placeholder.com/120";
-  profilePicInput.value = ""; // مسح الاختيار
+// إزالة الصورة
+removePicBtn.addEventListener('click', async ()=>{
+  if(!currentUser) return;
+  if(!confirm("هل تريد إزالة الصورة الشخصية؟")) return;
+  const storageReference = storageRef(storage,'profile_pics/'+currentUser.uid);
+  try{ await deleteObject(storageReference); } catch(e){ console.warn(e); }
+  profilePreview.src="https://via.placeholder.com/120";
+  profilePicInput.value="";
 });
 
-// تحميل بيانات المستخدم عند الدخول
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
+// تحميل بيانات المستخدم
+onAuthStateChanged(auth, async (user)=>{
+  if(user){
     currentUser = user;
-    await loadUserData();
-  } else {
-    window.location.href = "index.html";
-  }
+    const docRef = doc(db,"users",currentUser.uid);
+    const docSnap = await getDoc(docRef);
+    if(docSnap.exists()){
+      const data = docSnap.data();
+      document.getElementById("fullname").value = data.fullname||"";
+      document.getElementById("email").value = data.email||"";
+      document.getElementById("phone").value = data.phone||"";
+      document.getElementById("birthdate").value = data.birthdate||"";
+      if(data.photoURL) profilePreview.src = data.photoURL;
+    }
+  } else { window.location.href="index.html"; }
 });
-
-async function loadUserData() {
-  if (!currentUser) return;
-  const docRef = doc(db, "users", currentUser.uid);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    document.getElementById("fullname").value = data.fullname || "";
-    document.getElementById("email").value = data.email || "";
-    document.getElementById("phone").value = data.phone || "";
-    document.getElementById("birthdate").value = data.birthdate || "";
-    if(data.photoURL) profilePreview.src = data.photoURL;
-  }
-}
 
 // حفظ البيانات
-document.getElementById('profile-form').addEventListener('submit', async (e) => {
+document.getElementById('profile-form').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  if (!currentUser) return;
-
-  const fullname = document.getElementById("fullname").value;
-  const email = document.getElementById("email").value;
-  const phone = document.getElementById("phone").value;
-  const birthdate = document.getElementById("birthdate").value;
-
-  let photoURL = null;
+  if(!currentUser) return;
+  const fullname=document.getElementById("fullname").value;
+  const email=document.getElementById("email").value;
+  const phone=document.getElementById("phone").value;
+  const birthdate=document.getElementById("birthdate").value;
+  let photoURL=null;
   const file = profilePicInput.files[0];
-  if (file) {
-    try {
-      const storageReference = storageRef(storage, 'profile_pics/' + currentUser.uid);
-      await uploadBytes(storageReference, file);
+  if(file){
+    try{
+      const storageReference = storageRef(storage,'profile_pics/'+currentUser.uid);
+      await uploadBytes(storageReference,file);
       photoURL = await getDownloadURL(storageReference);
-    } catch (error) {
-      console.error("خطأ أثناء رفع الصورة:", error);
-      alert("حدث خطأ أثناء رفع الصورة");
-      return;
-    }
+    }catch(err){ alert("حدث خطأ أثناء رفع الصورة"); return; }
   }
-
-  // إذا الصورة هي placeholder ولم يتم رفع صورة جديدة، نحذف photoURL
-  if(profilePreview.src.endsWith("placeholder.com/120")) photoURL = null;
-
-  const updateData = { fullname, email, phone, birthdate };
-  if(photoURL) updateData.photoURL = photoURL;
-  else updateData.photoURL = ""; // حذف الصورة في Firestore
-
-  await setDoc(doc(db, "users", currentUser.uid), updateData, { merge: true });
+  if(profilePreview.src.endsWith("placeholder.com/120")) photoURL=null;
+  const updateData = {fullname,email,phone,birthdate};
+  if(photoURL) updateData.photoURL=photoURL;
+  else updateData.photoURL="";
+  await setDoc(doc(db,"users",currentUser.uid),updateData,{merge:true});
   alert("✅ تم حفظ التعديلات بنجاح!");
-  window.location.href = "profile.html";
+  window.location.href="profile.html";
+});
+
+// تغيير اللغة
+const translations={
+  ar:{title:"✏️ تعديل الملف الشخصي",photo:"الصورة الشخصية",fullname:"الاسم الكامل",email:"الإيميل",phone:"رقم الهاتف",birthdate:"تاريخ الميلاد",save:"💾 حفظ التعديلات",back:"↩️ رجوع"},
+  en:{title:"✏️ Edit Profile",photo:"Profile Photo",fullname:"Full Name",email:"Email",phone:"Phone Number",birthdate:"Birthdate",save:"💾 Save Changes",back:"↩️ Back"}
+};
+const langSelect=document.getElementById("lang-select");
+langSelect.addEventListener("change",()=>{
+  const lang=langSelect.value;
+  document.getElementById("title").innerText=translations[lang].title;
+  document.getElementById("label-photo").innerText=translations[lang].photo;
+  document.getElementById("label-fullname").innerText=translations[lang].fullname;
+  document.getElementById("label-email").innerText=translations[lang].email;
+  document.getElementById("label-phone").innerText=translations[lang].phone;
+  document.getElementById("label-birthdate").innerText=translations[lang].birthdate;
+  document.getElementById("save-btn").innerText=translations[lang].save;
+  document.getElementById("back-btn").innerText=translations[lang].back;
+  document.body.dir = lang==="ar"?"rtl":"ltr";
 });
 </script>
 </body>
