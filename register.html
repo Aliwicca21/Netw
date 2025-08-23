@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <title>إنشاء حساب</title>
-<link rel="stylesheet" href="auth.css">
+<link rel="stylesheet" href="ali.e.css">
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
   authDomain: "fir-dba4c.firebaseapp.com",
@@ -23,24 +24,24 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ===== الترجمة =====
+// ✅ الترجمة
 const translations = {
   en: {
     title: "Create New Account",
     email: "Email",
     password: "Password",
-    phone: "Phone (+20123456789)",
+    phone: "Phone (+CountryCode)",
     username: "Username",
     fullname: "Full Name",
     birthdate: "Birth Date",
-    submit: "Sign Up",
+    submit: "Create Account",
     login: "Already have an account? Login"
   },
   ar: {
     title: "إنشاء حساب جديد",
     email: "البريد الإلكتروني",
     password: "كلمة المرور",
-    phone: "رقم الهاتف (+20123456789)",
+    phone: "رقم الهاتف (+رمز الدولة)",
     username: "اسم المستخدم",
     fullname: "الاسم الكامل",
     birthdate: "تاريخ الميلاد",
@@ -49,10 +50,13 @@ const translations = {
   }
 };
 
-let currentLang = "ar";
+let currentLang = "en";
 
-function updateText() {
-  const t = translations[currentLang];
+window.changeLanguage = function(lang){
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  const t = translations[lang];
+
   document.getElementById("form-title").textContent = t.title;
   document.getElementById("email").placeholder = t.email;
   document.getElementById("password").placeholder = t.password;
@@ -62,77 +66,82 @@ function updateText() {
   document.getElementById("birthdate").placeholder = t.birthdate;
   document.getElementById("submit-btn").textContent = t.submit;
   document.getElementById("login-btn").textContent = t.login;
-  document.body.dir = currentLang === "ar" ? "rtl" : "ltr";
-  document.documentElement.lang = currentLang;
 }
 
-// ===== تغيير اللغة =====
-window.changeLanguage = function(lang) {
-  currentLang = lang;
-  updateText();
-}
-
-// ===== إنشاء الحساب =====
+// ✅ إنشاء الحساب
 window.signupUser = async function() {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
-    const phone = document.getElementById("phone").value.trim();
-    const username = document.getElementById("username").value.trim();
-    const fullname = document.getElementById("fullname").value.trim();
-    const birthdate = document.getElementById("birthdate").value;
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const phone = document.getElementById("phone").value.trim();
+  const username = document.getElementById("username").value.trim();
+  const fullname = document.getElementById("fullname").value.trim();
+  const birthdate = document.getElementById("birthdate").value;
 
-    if(!email || !password || !phone || !username || !fullname || !birthdate){
-        return alert(currentLang === "ar" ? "جميع الحقول مطلوبة!" : "All fields are required!");
-    }
+  if(!email || !password || !phone || !username || !fullname || !birthdate){
+    return alert("جميع الحقول مطلوبة!");
+  }
 
-    if(!phone.startsWith("+") || phone.replace(/\D/g,'').length < 5){
-        return alert(currentLang === "ar" ? "رقم الهاتف غير صحيح!" : "Invalid phone number!");
-    }
+  if(!phone.startsWith("+") || phone.replace(/\D/g,'').length < 5){
+    return alert("رقم الهاتف غير صحيح. يجب كتابة رمز الدولة ورقم الهاتف كاملًا.");
+  }
 
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-        await setDoc(doc(db, "users", user.uid), {
-            email, phone, username, fullname, birthdate, balance: 0, subscription: null
-        });
+    await setDoc(doc(db, "users", user.uid), {
+      email,
+      phone,
+      username,
+      fullname,
+      birthdate,
+      balance: 0,
+      subscription: null
+    });
 
-        alert(currentLang === "ar" ? "تم إنشاء الحساب بنجاح ✅" : "Account created successfully ✅");
-        window.location.href = "index.html";
-    } catch(error){
-        alert(currentLang === "ar" ? "حدث خطأ: " + error.message : "Error: " + error.message);
-    }
-}
-
-// ===== زر تسجيل الدخول =====
-window.goToLogin = function(){
+    alert("تم إنشاء الحساب بنجاح ✅ يمكنك تسجيل الدخول مباشرة.");
     window.location.href = "index.html";
+
+  } catch(error){
+    alert("حدث خطأ: " + error.message);
+  }
 }
 
-window.addEventListener('DOMContentLoaded', updateText);
+// ✅ الانتقال لتسجيل الدخول
+window.goToLogin = function(){
+  window.location.href = "index.html";
+}
+
+// تعيين اللغة افتراضي عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', () => changeLanguage('en'));
 </script>
 </head>
 <body>
+
 <!-- Language Selector -->
 <div class="language-selector">
   <select onchange="changeLanguage(this.value)">
-    <option value="ar" selected>العربية</option>
-    <option value="en">English</option>
+    <option value="en" selected>English</option>
+    <option value="ar">العربية</option>
   </select>
 </div>
 
+<!-- Card Full Screen -->
 <div class="card">
   <h2 id="form-title">إنشاء حساب جديد</h2>
+
   <form onsubmit="event.preventDefault(); signupUser();">
-    <div class="input-group"><span>📧</span><input type="email" id="email" required></div>
-    <div class="input-group"><span>🔒</span><input type="password" id="password" required></div>
-    <div class="input-group"><span>📱</span><input type="text" id="phone" required></div>
-    <div class="input-group"><span>👤</span><input type="text" id="username" required></div>
-    <div class="input-group"><span>📝</span><input type="text" id="fullname" required></div>
-    <div class="input-group"><span>🎂</span><input type="date" id="birthdate" required></div>
-    <button type="submit" id="submit-btn" class="btn-success">إنشاء الحساب</button>
+    <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+    <input type="password" id="password" placeholder="كلمة المرور" required>
+    <input type="text" id="phone" placeholder="+20123456789 رقم الهاتف" required>
+    <input type="text" id="username" placeholder="اسم المستخدم" required>
+    <input type="text" id="fullname" placeholder="الاسم الكامل" required>
+    <input type="date" id="birthdate" required>
+    <button type="submit" id="submit-btn">إنشاء الحساب</button>
   </form>
-  <button class="secondary" id="login-btn" onclick="goToLogin()">لديك حساب؟ تسجيل الدخول</button>
+
+  <button class="secondary small" id="login-btn" onclick="goToLogin()">لديك حساب؟ تسجيل الدخول</button>
 </div>
+
 </body>
 </html>
