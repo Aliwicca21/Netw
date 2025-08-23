@@ -1,119 +1,139 @@
-/* ========== الأساسيات ========== */
-body {
-  font-family: "Tahoma", Arial, sans-serif;
-  background: linear-gradient(135deg, #0070ba, #00b4d8);
+/* ali.e.css */
+
+/* ===== Reset ===== */
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* ===== Body ===== */
+body {
+  background: linear-gradient(135deg, #f8f9fa, #e0f7fa);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  direction: rtl;
+  padding: 20px;
+  position: relative;
 }
 
-/* ========== البطاقة الرئيسية ========== */
+/* ===== Card ===== */
 .card {
   background: #fff;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0px 8px 25px rgba(0,0,0,0.15);
-  width: 380px;
-  text-align: center;
-  animation: fadeIn 1s ease-in-out;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  padding: 30px 25px;
+  width: 100%;
+  max-width: 450px;
+  position: relative;
 }
 
-/* ========== العنوان ========== */
+/* ===== Form Title ===== */
 .card h2 {
-  margin-bottom: 20px;
-  font-size: 24px;
-  color: #0070ba;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.card h2::before {
-  content: "📝";
-  font-size: 26px;
-}
-
-/* ========== الفورم ========== */
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-label {
-  text-align: right;
-  font-weight: bold;
+  text-align: center;
+  margin-bottom: 25px;
   color: #333;
-  margin-bottom: 5px;
-}
-
-input, select {
-  padding: 10px;
-  border: 1.5px solid #ddd;
-  border-radius: 10px;
-  outline: none;
-  font-size: 14px;
-  transition: 0.3s;
-}
-
-input:focus, select:focus {
-  border-color: #0070ba;
-  box-shadow: 0px 0px 5px rgba(0,112,186,0.5);
-}
-
-/* ========== الأزرار ========== */
-button {
-  font-size: 15px;
   font-weight: bold;
-  padding: 12px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
+}
+
+/* ===== Input Groups with Icons ===== */
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fafafa;
   transition: 0.3s;
 }
 
-button[type="submit"] {
-  background: #0070ba;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
+.input-group span {
+  padding: 0 12px;
+  background: #e9ecef;
+  font-size: 18px;
 }
 
-button[type="submit"]::before {
-  content: "✅";
+.input-group input {
+  border: none;
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  outline: none;
+  background: transparent;
 }
 
-button[type="submit"]:hover {
-  background: #005c99;
+/* ===== Input Focus ===== */
+.input-group:focus-within {
+  border: 1px solid #4CAF50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }
 
-.card > button {
-  background: #666;
-  color: white;
+/* ===== Buttons ===== */
+button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
   margin-top: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
+  transition: 0.3s;
 }
 
-.card > button::before {
-  content: "🔑";
+/* زر التسجيل */
+.btn-success {
+  background-color: #4CAF50;
+  color: white;
 }
 
-.card > button:hover {
-  background: #444;
+.btn-success:hover {
+  background-color: #45a049;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* ========== أنيميشن ========== */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+/* زر تسجيل الدخول */
+button.secondary {
+  background-color: #007bff;
+  color: white;
+}
+
+button.secondary:hover {
+  background-color: #0069d9;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* ===== Language Selector ===== */
+.language-selector {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.language-selector select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background: #fff;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 500px) {
+  .card {
+    padding: 20px;
+  }
+  .input-group span {
+    padding: 0 8px;
+  }
+  .input-group input {
+    font-size: 13px;
+    padding: 10px;
+  }
+  button {
+    font-size: 14px;
+    padding: 10px;
+  }
 }
