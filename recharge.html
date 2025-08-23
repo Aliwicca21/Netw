@@ -2,141 +2,100 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Kalk.Bot - Recharge Balance</title>
+  <title>Kalk.Bot - Recharge</title>
   <link rel="stylesheet" href="star.css">
-  <script src="https://www.paypal.com/sdk/js?client-id=AZ44qaQI2dxTksnrqKU4gT1rL1HXZbWFmk2fqM5thehRfuWiL4DQI0ZP7dIISJwAoiO4qrP9D4Iw1a_i&currency=USD"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
-      authDomain: "fir-dba4c.firebaseapp.com",
-      projectId: "fir-dba4c",
-      storageBucket: "fir-dba4c.firebasestorage.app",
-      messagingSenderId: "160255207915",
-      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
-      measurementId: "G-GYPNMR85G2"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    let currentUser = null;
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-      } else {
-        window.location.href = "login.html";
-      }
-    });
-
-    async function updateBalance(amount) {
-      if (!currentUser) return;
-      const userRef = doc(db, "users", currentUser.uid);
-      const userSnap = await getDoc(userRef);
-      const oldBalance = userSnap.data().balance || 0;
-      const newBalance = oldBalance + amount;
-      await updateDoc(userRef, { balance: newBalance });
-      alert(translations[currentLang].added + " " + amount + "$ ✅");
+  <style>
+    /* ننقل اختيار اللغة جوه الكرت */
+    .language-selector {
+      position: relative;
+      top: 0;
+      right: 0;
+      margin-bottom: 20px;
+      text-align: right;
     }
-
-    function createPayPalButton(amount) {
-      paypal.Buttons({
-        style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'pay' },
-        createOrder: function(data, actions) {
-          return actions.order.create({
-            purchase_units: [{ amount: { value: amount.toFixed(2) } }]
-          });
-        },
-        onApprove: function(data, actions) {
-          return actions.order.capture().then(function(details) {
-            updateBalance(amount);
-            alert(translations[currentLang].paidBy + " " + details.payer.name.given_name);
-          });
-        }
-      }).render('#paypal-button-container');
+    .language-selector select {
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
     }
-
-    window.startPayment = function() {
-      const amountInput = parseFloat(document.getElementById("amount").value);
-      if (isNaN(amountInput) || amountInput <= 0) {
-        alert(translations[currentLang].enterValid);
-        return;
-      }
-      document.getElementById("paypal-button-container").innerHTML = "";
-      createPayPalButton(amountInput);
+    .language-selector select:hover {
+      background: rgba(255,255,255,0.25);
     }
-
-    window.goBack = function() {
-      window.location.href = "profile.html";
-    }
-
-    // ----------------
-    // 🔹 دعم اللغات
-    // ----------------
-    const translations = {
-      en: {
-        recharge: "Recharge Balance",
-        amount: "Amount ($):",
-        placeholder: "Example: 5",
-        pay: "Pay with PayPal",
-        back: "Back to Profile",
-        enterValid: "Please enter a valid amount",
-        added: "Added to your balance",
-        paidBy: "Payment done by"
-      },
-      ar: {
-        recharge: "شحن الرصيد",
-        amount: "المبلغ بال$:",
-        placeholder: "مثال: 5",
-        pay: "دفع عبر PayPal",
-        back: "العودة إلى الملف الشخصي",
-        enterValid: "الرجاء إدخال مبلغ صحيح",
-        added: "تم إضافة إلى رصيدك",
-        paidBy: "تم الدفع بواسطة"
-      }
-    };
-
-    let currentLang = "en"; // اللغة الأساسية انجليزي
-
-    window.changeLanguage = function(lang) {
-      currentLang = lang;
-      document.documentElement.lang = lang;
-      document.body.dir = lang === "ar" ? "rtl" : "ltr";
-      document.getElementById("title").innerText = translations[lang].recharge;
-      document.getElementById("amount-label").innerText = translations[lang].amount;
-      document.getElementById("amount").placeholder = translations[lang].placeholder;
-      document.getElementById("pay-btn").innerText = translations[lang].pay;
-      document.getElementById("back-btn").innerText = translations[lang].back;
-    }
-  </script>
+  </style>
 </head>
 <body>
-  <div class="language-selector">
-    <select onchange="changeLanguage(this.value)">
-      <option value="en" selected>English</option>
-      <option value="ar">العربية</option>
-    </select>
+  <div class="card" id="card">
+
+    <!-- اختيار اللغة -->
+    <div class="language-selector">
+      <select id="langSwitcher" onchange="changeLang(this.value)">
+        <option value="en" selected>English</option>
+        <option value="ar">العربية</option>
+      </select>
+    </div>
+
+    <!-- صورة بروفايل -->
+    <div style="text-align:center;">
+      <img src="profile.jpg" alt="Profile" class="profile-pic">
+    </div>
+
+    <!-- بيانات -->
+    <div class="data-grid" id="content">
+      <div class="data-box">
+        <span class="data-icon">💳</span>
+        <p><strong id="balance-label">Balance</strong><br><span id="balance-value">$50</span></p>
+      </div>
+      <div class="data-box">
+        <span class="data-icon">📱</span>
+        <p><strong id="number-label">Phone</strong><br><span id="number-value">+123456789</span></p>
+      </div>
+    </div>
+
+    <!-- أزرار -->
+    <div class="section">
+      <h3 id="actions-title">Actions</h3>
+      <button class="btn-primary" id="recharge-btn">Recharge</button>
+      <button class="btn-secondary" id="history-btn">History</button>
+    </div>
   </div>
 
-  <div class="card">
-    <h2 id="title">Recharge Balance</h2>
+  <script>
+    const translations = {
+      en: {
+        balance: "Balance",
+        phone: "Phone",
+        actions: "Actions",
+        recharge: "Recharge",
+        history: "History"
+      },
+      ar: {
+        balance: "الرصيد",
+        phone: "رقم الهاتف",
+        actions: "الإجراءات",
+        recharge: "شحن",
+        history: "السجل"
+      }
+    };
 
-    <label id="amount-label">Amount ($):</label>
-    <input type="number" id="amount" placeholder="Example: 5" min="1">
+    function changeLang(lang) {
+      document.getElementById("balance-label").innerText = translations[lang].balance;
+      document.getElementById("number-label").innerText = translations[lang].phone;
+      document.getElementById("actions-title").innerText = translations[lang].actions;
+      document.getElementById("recharge-btn").innerText = translations[lang].recharge;
+      document.getElementById("history-btn").innerText = translations[lang].history;
 
-    <button id="pay-btn" onclick="startPayment()" class="primary-btn">
-      Pay with PayPal
-    </button>
-
-    <div id="paypal-button-container" style="margin-top:20px;"></div>
-
-    <button id="back-btn" onclick="goBack()" class="secondary-btn">
-      Back to Profile
-    </button>
-  </div>
+      // اتجاه النص لو عربي
+      if (lang === "ar") {
+        document.getElementById("card").setAttribute("dir", "rtl");
+      } else {
+        document.getElementById("card").setAttribute("dir", "ltr");
+      }
+    }
+  </script>
 </body>
 </html>
