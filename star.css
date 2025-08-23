@@ -1,120 +1,67 @@
-/* ===== إعدادات أساسية ===== */
 body {
-  font-family: "Cairo", "Tahoma", sans-serif;
-  background: linear-gradient(135deg, #0070ba, #00c6ff);
+  font-family: Arial, sans-serif;
+  background: #f8f9fa;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   margin: 0;
-  direction: rtl;
+  direction: ltr;
 }
 
-/* ===== الكارت ===== */
+.language-selector {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+
 .card {
   background: #fff;
-  padding: 30px;
-  border-radius: 18px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-  width: 430px;
-  text-align: right;
-  animation: fadeIn 0.6s ease-in-out;
-}
-
-/* ===== العنوان ===== */
-.card h2 {
-  margin-bottom: 20px;
-  color: #0070ba;
-  font-size: 24px;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  width: 360px;
   text-align: center;
 }
 
-.card h2::before {
-  content: "💰 ";
-}
-
-/* ===== الإدخال ===== */
-.card label {
-  display: block;
-  font-size: 16px;
+h2 {
+  margin-bottom: 20px;
   color: #0070ba;
-  margin-bottom: 6px;
 }
 
-.card input {
+input {
   width: 100%;
   padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
   font-size: 16px;
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  outline: none;
-  transition: 0.3s;
 }
 
-.card input:focus {
-  border-color: #0070ba;
-  box-shadow: 0 0 5px rgba(0, 112, 186, 0.4);
-}
-
-/* ===== الأزرار ===== */
-.card button {
+button {
   width: 100%;
-  padding: 12px 0;
-  margin-top: 12px;
+  padding: 12px;
+  margin-top: 10px;
   border: none;
-  border-radius: 10px;
-  font-size: 16px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  font-size: 16px;
 }
 
-/* زر الدفع */
-.card button:first-of-type {
-  background: #0070ba;
-  color: #fff;
+.primary-btn {
+  background-color: #0070ba;
+  color: white;
 }
 
-.card button:first-of-type::before {
-  content: "💳 ";
+.primary-btn:hover {
+  background-color: #005f99;
 }
 
-.card button:first-of-type:hover {
-  background: #005b94;
-  transform: scale(1.03);
+.secondary-btn {
+  background-color: gray;
+  color: white;
 }
 
-/* زر الرجوع */
-.card button:last-of-type {
-  background: gray;
-  color: #fff;
-}
-
-.card button:last-of-type::before {
-  content: "↩️ ";
-}
-
-.card button:last-of-type:hover {
-  background: #444;
-  transform: scale(1.03);
-}
-
-/* ===== PayPal container ===== */
-#paypal-button-container {
-  margin-top: 20px;
-}
-
-/* ===== تأثير الدخول ===== */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.secondary-btn:hover {
+  background-color: #444;
 }
