@@ -1,6 +1,4 @@
-/* eg.css */
-
-/* إعدادات عامة للجسم */
+/* إعدادات الجسم والخلفية */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
@@ -13,7 +11,7 @@ body {
     background: radial-gradient(ellipse at bottom, #0d0d0d 0%, #1a1a1a 100%);
 }
 
-/* خلفية النجوم المتلألئة */
+/* نجوم متلألئة متحركة */
 body::before {
     content: '';
     position: fixed;
@@ -45,36 +43,36 @@ body::before {
     to { opacity: 1; }
 }
 
-/* تصميم الكارد */
+/* تصميم الكارد الزجاجي الشفاف */
 .card {
     position: relative;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    border-radius: 25px;
-    padding: 60px 35px 35px 35px;
-    width: 450px;
-    max-width: 90%;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(25px);
+    border-radius: 30px;
+    padding: 65px 35px 35px 35px;
+    width: 480px;
+    max-width: 95%;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.6);
     text-align: center;
-    animation: slideIn 1s ease-in-out;
     border: 1px solid rgba(255,255,255,0.2);
+    animation: slideIn 1s ease-in-out;
 }
 
-/* اسم Kalk.Bot مع لمعة متحركة */
+/* اسم Kalk.Bot مع لمعة */
 .card::before {
     content: "Kalk.Bot";
     position: absolute;
-    top: -40px;
+    top: -45px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 32px;
+    font-size: 36px;
     font-weight: bold;
     background: linear-gradient(90deg, #ff416c, #ff4b2b, #ff416c);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: shine 3s linear infinite;
-    padding: 5px 15px;
-    border-radius: 15px;
+    padding: 6px 20px;
+    border-radius: 20px;
 }
 
 @keyframes shine {
@@ -84,13 +82,13 @@ body::before {
 
 /* صورة البروفايل */
 .profile-pic {
-    width: 120px;
-    height: 120px;
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
-    border: 4px solid rgba(255, 255, 255, 0.6);
+    border: 4px solid rgba(255, 255, 255, 0.5);
     margin-bottom: 20px;
     object-fit: cover;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     transition: transform 0.3s ease;
 }
 
@@ -101,9 +99,9 @@ body::before {
 /* العناوين */
 h2 {
     margin-bottom: 20px;
-    font-size: 28px;
+    font-size: 30px;
     color: #fff;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    text-shadow: 0 3px 8px rgba(0,0,0,0.5);
 }
 
 h3 {
@@ -113,15 +111,12 @@ h3 {
     text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 
-/* الفقرات مع إيموجي */
+/* الفقرات مع إيموجي لكل خانة */
 p {
-    margin: 8px 0;
+    margin: 10px 0;
     font-size: 16px;
-    line-height: 1.5;
-}
-
-p strong::before {
-    content: "⭐ "; /* نجمة افتراضية قبل كل خانة */
+    line-height: 1.6;
+    color: #fff;
 }
 
 #username::before { content: "👤 "; }
@@ -141,20 +136,20 @@ p strong::before {
 
 /* الأزرار */
 button {
-    padding: 10px 20px;
+    padding: 12px 25px;
     border: none;
-    border-radius: 10px;
+    border-radius: 15px;
     cursor: pointer;
     font-size: 16px;
     margin: 5px;
     transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 }
 
 .btn-primary {
     background: #2575fc;
     color: #fff;
 }
-
 .btn-primary:hover {
     background: #1a5dcc;
     transform: translateY(-2px);
@@ -164,7 +159,6 @@ button {
     background: #28a745;
     color: #fff;
 }
-
 .btn-success:hover {
     background: #1e7e34;
     transform: translateY(-2px);
@@ -174,7 +168,6 @@ button {
     background: #dc3545;
     color: #fff;
 }
-
 .btn-danger:hover {
     background: #a71d2a;
     transform: translateY(-2px);
@@ -184,24 +177,42 @@ button {
     background: #6c757d;
     color: #fff;
 }
-
 .btn-secondary:hover {
     background: #565e64;
     transform: translateY(-2px);
 }
 
-/* تأثيرات عامة */
-@keyframes fadeIn {
-    from {opacity: 0; transform: translateY(20px);}
-    to {opacity: 1; transform: translateY(0);}
+/* Dropdown اختيار اللغة */
+.language-selector {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 14px;
+    color: #fff;
 }
 
+.language-selector select {
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+}
+
+.language-selector select:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+/* تأثيرات عامة */
 @keyframes slideIn {
     from {opacity: 0; transform: translateY(30px);}
     to {opacity: 1; transform: translateY(0);}
 }
 
-/* لجعل النصوص واضحة على الخلفية */
+/* النصوص بارزة */
 span {
     font-weight: bold;
 }
