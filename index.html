@@ -9,17 +9,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebas
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-// Firebase config
+// ==============================
+// Firebase config الجديد
+// ==============================
 const firebaseConfig = {
-  apiKey: "AIzaSyBdsu6eudfC9zHM7W54Q2WKu92xlWdyPk4",
-  authDomain: "islamicsupplications-dc167.firebaseapp.com",
-  databaseURL: "https://islamicsupplications-dc167-default-rtdb.firebaseio.com",
-  projectId: "islamicsupplications-dc167",
-  storageBucket: "islamicsupplications-dc167.appspot.com",
-  messagingSenderId: "729945511743",
-  appId: "1:729945511743:web:ce98cbfdf3f6f4becd658a",
-  measurementId: "G-6MLJL225LX"
+  apiKey: "AIzaSyDavI-NCLUrH6MvK-cKntmDJ0C90kzS0Pk",
+  authDomain: "my-application-5e7ee.firebaseapp.com",
+  databaseURL: "https://my-application-5e7ee-default-rtdb.firebaseio.com",
+  projectId: "my-application-5e7ee",
+  storageBucket: "my-application-5e7ee.appspot.com",
+  messagingSenderId: "425036201138",
+  appId: "1:425036201138:web:951f8a34125eff4b425dab",
+  measurementId: "G-8QEZ0GZ73D"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -49,19 +52,73 @@ async function getEmailFromIdentifier(identifier) {
   return null;
 }
 
+// ----------------------------
+// ترجمات
+// ----------------------------
+const translations = {
+  en: {
+    title: "Login",
+    placeholder: "Email / Username / Phone",
+    password: "Password",
+    login: "Login",
+    forgot: "Forgot password?",
+    noAccount: "Don't have an account?",
+    register: "Register",
+    enterAllFields: "Please enter all fields",
+    userNotFound: "User not found",
+    enterEmailReset: "Enter your email to reset password",
+    resetSent: "Reset link sent to your email"
+  },
+  ar: {
+    title: "تسجيل الدخول",
+    placeholder: "البريد / اسم المستخدم / الهاتف",
+    password: "كلمة المرور",
+    login: "تسجيل الدخول",
+    forgot: "نسيت كلمة المرور؟",
+    noAccount: "ليس لديك حساب؟",
+    register: "إنشاء حساب",
+    enterAllFields: "الرجاء إدخال جميع الحقول",
+    userNotFound: "المستخدم غير موجود",
+    enterEmailReset: "أدخل بريدك لإعادة تعيين كلمة المرور",
+    resetSent: "تم إرسال رابط إعادة التعيين إلى بريدك"
+  }
+};
+
+let currentLang = "en";
+
+// تغيير اللغة
+window.changeLanguage = function(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.body.dir = lang === "ar" ? "rtl" : "ltr";
+
+  const t = translations[lang];
+  document.getElementById("title").textContent = t.title;
+  document.getElementById("identifier").placeholder = t.placeholder;
+  document.getElementById("password").placeholder = t.password;
+  document.getElementById("login-btn").textContent = t.login;
+  document.getElementById("forgot-link").textContent = t.forgot;
+  document.getElementById("no-account").childNodes[0].textContent = t.noAccount + " ";
+  document.getElementById("register-link").textContent = t.register;
+};
+
+// ----------------------------
+// تسجيل الدخول
+// ----------------------------
 window.loginUnified = async (e) => {
   e.preventDefault();
   const identifier = document.getElementById("identifier").value.trim();
   const password = document.getElementById("password").value;
+  const t = translations[currentLang];
 
   if (!identifier || !password) {
-    alert("Please enter all fields");
+    alert(t.enterAllFields);
     return;
   }
 
   const emailToLogin = await getEmailFromIdentifier(identifier);
   if (!emailToLogin) {
-    alert("User not found");
+    alert(t.userNotFound);
     return;
   }
 
@@ -73,15 +130,18 @@ window.loginUnified = async (e) => {
   }
 };
 
+// إعادة تعيين كلمة المرور
 window.resetPassword = async () => {
   const identifier = document.getElementById("identifier").value.trim();
+  const t = translations[currentLang];
+
   if (!looksLikeEmail(identifier)) {
-    alert("Enter your email to reset password");
+    alert(t.enterEmailReset);
     return;
   }
   try {
     await sendPasswordResetEmail(auth, identifier);
-    alert("Reset link sent to your email");
+    alert(t.resetSent);
   } catch (err) {
     alert(err.message);
   }
@@ -89,15 +149,22 @@ window.resetPassword = async () => {
 </script>
 </head>
 <body>
+  <div class="language-selector">
+    <select onchange="changeLanguage(this.value)">
+      <option value="en" selected>English</option>
+      <option value="ar">العربية</option>
+    </select>
+  </div>
+
   <div class="card">
-    <h2>Login</h2>
+    <h2 id="title">Login</h2>
     <form onsubmit="loginUnified(event)">
       <input type="text" id="identifier" placeholder="Email / Username / Phone" required />
       <input type="password" id="password" placeholder="Password" required />
-      <button type="submit">Login</button>
+      <button type="submit" id="login-btn">Login</button>
     </form>
-    <a href="#" onclick="resetPassword()">Forgot password?</a>
-    <p>Don't have an account? <a href="register.html">Register</a></p>
+    <a href="#" id="forgot-link" onclick="resetPassword()">Forgot password?</a>
+    <p id="no-account">Don't have an account? <a href="register.html" id="register-link">Register</a></p>
   </div>
 </body>
 </html>
