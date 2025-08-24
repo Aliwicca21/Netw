@@ -5,12 +5,12 @@
 <title>Kalk.Bot - Register</title>
 <link rel="stylesheet" href="alloush.css" />
 <script type="module">
-// استيراد مكتبات فايربيس
+// استيراد مكتبات Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-// إعدادات Firebase (استبدلها من مشروعك لو اتغيرت)
+// إعدادات Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBdsu6eudfC9zHM7W54Q2WKu92xlWdyPk4",
   authDomain: "islamicsupplications-dc167.firebaseapp.com",
@@ -27,7 +27,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// دالة لتطبيع الرقم (إزالة أي رموز)
+// دالة تطبيع الرقم (إزالة أي رموز)
 const normalizePhone = (v) => v.replace(/[^\d]/g, "");
 
 // تسجيل حساب جديد
@@ -38,11 +38,21 @@ window.register = async (e) => {
   const phone = document.getElementById("phone").value.trim();
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
+  const btn = document.querySelector("button[type='submit']");
 
   if (!username || !phone || !email || !password) {
-    alert("Please fill all fields");
+    alert("Please fill all fields.");
     return;
   }
+
+  const digits = normalizePhone(phone);
+  if (!digits || digits.length < 10) {
+    alert("Please enter a valid phone number.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Registering...";
 
   try {
     // إنشاء حساب جديد باستخدام الإيميل والباسورد
@@ -57,20 +67,30 @@ window.register = async (e) => {
     });
 
     // إنشاء فهرس لليوزر نيم
-    await setDoc(doc(db, "user_index", `username:${username.toLowerCase()}`), {
-      email
-    });
+    await setDoc(doc(db, "user_index", `username:${username.toLowerCase()}`), { email });
 
     // إنشاء فهرس للرقم
-    const digits = normalizePhone(phone);
-    if (digits) {
-      await setDoc(doc(db, "user_index", `phone:${digits}`), { email });
-    }
+    await setDoc(doc(db, "user_index", `phone:${digits}`), { email });
 
     alert("Registered successfully!");
     window.location.href = "login.html";
   } catch (err) {
-    alert("Error: " + err.message);
+    switch(err.code) {
+      case "auth/email-already-in-use":
+        alert("This email is already registered.");
+        break;
+      case "auth/invalid-email":
+        alert("Invalid email address.");
+        break;
+      case "auth/weak-password":
+        alert("Password should be at least 6 characters.");
+        break;
+      default:
+        alert("Error: " + err.message);
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Register";
   }
 };
 </script>
