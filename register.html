@@ -5,11 +5,12 @@
 <title>Kalk.Bot - Register</title>
 <link rel="stylesheet" href="alloush.css" />
 <script type="module">
+// استيراد مكتبات فايربيس
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-// Firebase config
+// إعدادات Firebase (استبدلها من مشروعك لو اتغيرت)
 const firebaseConfig = {
   apiKey: "AIzaSyBdsu6eudfC9zHM7W54Q2WKu92xlWdyPk4",
   authDomain: "islamicsupplications-dc167.firebaseapp.com",
@@ -20,15 +21,19 @@ const firebaseConfig = {
   appId: "1:729945511743:web:ce98cbfdf3f6f4becd658a",
   measurementId: "G-6MLJL225LX"
 };
+
+// تهيئة Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// دالة لتطبيع الرقم (إزالة أي رموز)
 const normalizePhone = (v) => v.replace(/[^\d]/g, "");
 
-// تسجيل حساب
+// تسجيل حساب جديد
 window.register = async (e) => {
   e.preventDefault();
+
   const username = document.getElementById("username").value.trim();
   const phone = document.getElementById("phone").value.trim();
   const email = document.getElementById("email").value.trim();
@@ -40,9 +45,10 @@ window.register = async (e) => {
   }
 
   try {
+    // إنشاء حساب جديد باستخدام الإيميل والباسورد
     const userCred = await createUserWithEmailAndPassword(auth, email, password);
 
-    // حفظ بيانات المستخدم
+    // حفظ بيانات المستخدم داخل users
     await setDoc(doc(db, "users", userCred.user.uid), {
       username,
       phone,
@@ -50,11 +56,12 @@ window.register = async (e) => {
       createdAt: new Date().toISOString()
     });
 
-    // تحديث الفهرس user_index
+    // إنشاء فهرس لليوزر نيم
     await setDoc(doc(db, "user_index", `username:${username.toLowerCase()}`), {
       email
     });
 
+    // إنشاء فهرس للرقم
     const digits = normalizePhone(phone);
     if (digits) {
       await setDoc(doc(db, "user_index", `phone:${digits}`), { email });
@@ -63,7 +70,7 @@ window.register = async (e) => {
     alert("Registered successfully!");
     window.location.href = "login.html";
   } catch (err) {
-    alert(err.message);
+    alert("Error: " + err.message);
   }
 };
 </script>
