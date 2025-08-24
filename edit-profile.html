@@ -44,15 +44,18 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
 
+// Firebase الجديد
 const firebaseConfig = {
-  apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
-  authDomain: "fir-dba4c.firebaseapp.com",
-  projectId: "fir-dba4c",
-  storageBucket: "fir-dba4c.appspot.com",
-  messagingSenderId: "160255207915",
-  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
-  measurementId: "G-GYPNMR85G2"
+  apiKey: "AIzaSyDavI-NCLUrH6MvK-cKntmDJ0C90kzS0Pk",
+  authDomain: "my-application-5e7ee.firebaseapp.com",
+  databaseURL: "https://my-application-5e7ee-default-rtdb.firebaseio.com",
+  projectId: "my-application-5e7ee",
+  storageBucket: "my-application-5e7ee.appspot.com",
+  messagingSenderId: "425036201138",
+  appId: "1:425036201138:web:951f8a34125eff4b425dab",
+  measurementId: "G-8QEZ0GZ73D"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
