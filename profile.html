@@ -9,16 +9,19 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
+    // ==========================
+    // Firebase configuration الجديد
+    // ==========================
     const firebaseConfig = {
-  apiKey: "AIzaSyBdsu6eudfC9zHM7W54Q2WKu92xlWdyPk4",
-  authDomain: "islamicsupplications-dc167.firebaseapp.com",
-  databaseURL: "https://islamicsupplications-dc167-default-rtdb.firebaseio.com",
-  projectId: "islamicsupplications-dc167",
-  storageBucket: "islamicsupplications-dc167.appspot.com",
-  messagingSenderId: "729945511743",
-  appId: "1:729945511743:web:ce98cbfdf3f6f4becd658a",
-  measurementId: "G-6MLJL225LX"
-   ):
+      apiKey: "AIzaSyDavI-NCLUrH6MvK-cKntmDJ0C90kzS0Pk",
+      authDomain: "my-application-5e7ee.firebaseapp.com",
+      databaseURL: "https://my-application-5e7ee-default-rtdb.firebaseio.com",
+      projectId: "my-application-5e7ee",
+      storageBucket: "my-application-5e7ee.appspot.com",
+      messagingSenderId: "425036201138",
+      appId: "1:425036201138:web:951f8a34125eff4b425dab",
+      measurementId: "G-8QEZ0GZ73D"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -26,7 +29,9 @@
     let currentUser = null;
     let currentLang = "en";
 
+    // ==========================
     // ترجمات
+    // ==========================
     const translations = {
       en: {
         username: "Username",
@@ -80,7 +85,9 @@
       }
     };
 
-    // تحميل بيانات المستخدم
+    // ==========================
+    // التحقق من المستخدم
+    // ==========================
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
@@ -97,6 +104,7 @@
       if (docSnap.exists()) {
         const data = docSnap.data();
         const t = translations[currentLang];
+
         document.getElementById("username").textContent = data.username || "N/A";
         document.getElementById("fullname").textContent = data.fullname || "N/A";
         document.getElementById("email").textContent = data.email;
@@ -111,7 +119,9 @@
       }
     }
 
+    // ==========================
     // تغيير اللغة
+    // ==========================
     window.changeLanguage = function(lang) {
       currentLang = lang;
       document.documentElement.lang = lang;
@@ -143,7 +153,9 @@
       loadUserData();
     };
 
-    // دفع الاشتراك من الرصيد
+    // ==========================
+    // اشتراك من الرصيد
+    // ==========================
     window.renewSub = async function(months) {
       if (!currentUser) return;
       const docRef = doc(db, "users", currentUser.uid);
@@ -178,11 +190,14 @@
       loadUserData();
     };
 
-    // الأزرار الأساسية
+    // ==========================
+    // أزرار أساسية
+    // ==========================
     window.logout = async function() { await signOut(auth); window.location.href = "index.html"; }
     window.goToBot = function() { window.location.href = "botData.html"; }
     window.goToEditProfile = function() { window.location.href = "edit-profile.html"; }
     window.recharge = function() { window.location.href = "recharge.html"; }
+
   </script>
 </head>
 <body>
@@ -202,31 +217,4 @@
       <div class="data-box"><span class="data-icon">📧</span><div><p data-email-label>Email:</p><p id="email">Loading...</p></div></div>
       <div class="data-box"><span class="data-icon">📱</span><div><p data-phone-label>Phone:</p><p id="phone">Loading...</p></div></div>
       <div class="data-box"><span class="data-icon">🎂</span><div><p data-birthdate-label>Birth Date:</p><p id="birthdate">Loading...</p></div></div>
-      <div class="data-box"><span class="data-icon">💰</span><div><p data-balance-label>Balance:</p><p id="balance">Loading...</p></div></div>
-      <div class="data-box"><span class="data-icon">🗓️</span><div><p data-subscription-label>Subscription:</p><p id="subscription">Loading...</p></div></div>
-      <div class="data-box"><span class="data-icon">⏳</span><div><p data-enddate-label>End Date:</p><p id="end-date">Loading...</p></div></div>
-      <div class="data-box"><span class="data-icon">🤖</span><div><p data-botstatus-label>Bot Status:</p><p id="bot-status">Loading...</p></div></div>
-    </div>
-
-    <div class="section">
-      <h3 id="recharge-title">Recharge</h3>
-      <button id="recharge-btn" class="btn-success" onclick="recharge()">💳 Recharge</button>
-    </div>
-
-    <div class="section">
-      <h3 id="subscription-title">Subscription</h3>
-      <button id="sub1-btn" class="btn-primary" onclick="renewSub(1)">1 Month (2.50$)</button>
-      <button id="sub3-btn" class="btn-primary" onclick="renewSub(3)">3 Months (7.50$)</button>
-      <button id="sub12-btn" class="btn-primary" onclick="renewSub(12)">1 Year (30$)</button>
-      <button id="cancel-btn" class="btn-danger" onclick="cancelSub()">Cancel</button>
-    </div>
-
-    <div class="section">
-      <h3 id="account-title">Account</h3>
-      <button id="bot-btn" class="btn-primary" onclick="goToBot()">Bot Data</button>
-      <button id="edit-btn" class="btn-primary" onclick="goToEditProfile()">Edit Profile</button>
-      <button id="logout-btn" class="btn-danger" onclick="logout()">Logout</button>
-    </div>
-  </div>
-</body>
-</html>
+      <div class="data-box"><span class="data-icon">💰</span><div><p data-balance-label>Balance:</p><p id="balance">Loading...</
