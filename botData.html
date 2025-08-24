@@ -6,24 +6,28 @@
   <link rel="stylesheet" href="ali.css">
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
+    // Firebase الجديد
     const firebaseConfig = {
-      apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
-      authDomain: "fir-dba4c.firebaseapp.com",
-      projectId: "fir-dba4c",
-      storageBucket: "fir-dba4c.firebasestorage.app",
-      messagingSenderId: "160255207915",
-      appId: "1:160255207915:web:ce8e69d43f62daf476d1ae",
-      measurementId: "G-GYPNMR85G2"
+      apiKey: "AIzaSyDavI-NCLUrH6MvK-cKntmDJ0C90kzS0Pk",
+      authDomain: "my-application-5e7ee.firebaseapp.com",
+      databaseURL: "https://my-application-5e7ee-default-rtdb.firebaseio.com",
+      projectId: "my-application-5e7ee",
+      storageBucket: "my-application-5e7ee.appspot.com",
+      messagingSenderId: "425036201138",
+      appId: "1:425036201138:web:951f8a34125eff4b425dab",
+      measurementId: "G-8QEZ0GZ73D"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+
     let currentUser = null;
     let botStartTime = null;
+    let botTimerInterval = null;
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -47,15 +51,16 @@
           // عداد وقت تشغيل البوت
           if (data.botActive) {
             if (!botStartTime) botStartTime = new Date();
-            updateBotTimer(botStartTime);
+            startBotTimer(botStartTime);
           } else {
             document.getElementById("bot-timer").textContent = "❌ البوت متوقف";
+            if (botTimerInterval) clearInterval(botTimerInterval);
           }
         }
       });
     }
 
-    function updateBotTimer(startTime) {
+    function startBotTimer(startTime) {
       const timerElement = document.getElementById("bot-timer");
       function refreshTimer() {
         const now = new Date();
@@ -66,7 +71,8 @@
         timerElement.textContent = `${hours} س : ${minutes} د : ${seconds} ث`;
       }
       refreshTimer();
-      setInterval(refreshTimer, 1000);
+      if (botTimerInterval) clearInterval(botTimerInterval);
+      botTimerInterval = setInterval(refreshTimer, 1000);
     }
 
     window.goBackProfile = function() {
