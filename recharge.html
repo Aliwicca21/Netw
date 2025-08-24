@@ -2,48 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Kalk.Bot - Recharge Balance</title>
+  <title>Recharge Balance</title>
   <link rel="stylesheet" href="star.css">
   <script src="https://www.paypal.com/sdk/js?client-id=AZ44qaQI2dxTksnrqKU4gT1rL1HXZbWFmk2fqM5thehRfuWiL4DQI0ZP7dIISJwAoiO4qrP9D4Iw1a_i&currency=USD"></script>
   <script type="module">
+    // ----------------
+    // Firebase setup
+    // ----------------
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyBdsu6eudfC9zHM7W54Q2WKu92xlWdyPk4",
-  authDomain: "islamicsupplications-dc167.firebaseapp.com",
-  databaseURL: "https://islamicsupplications-dc167-default-rtdb.firebaseio.com",
-  projectId: "islamicsupplications-dc167",
-  storageBucket: "islamicsupplications-dc167.appspot.com",
-  messagingSenderId: "729945511743",
-  appId: "1:729945511743:web:ce98cbfdf3f6f4becd658a",
-  measurementId: "G-6MLJL225LX"
-};
+      apiKey: "AIzaSyBdsu6eudfC9zHM7W54Q2WKu92xlWdyPk4",
+      authDomain: "islamicsupplications-dc167.firebaseapp.com",
+      databaseURL: "https://islamicsupplications-dc167-default-rtdb.firebaseio.com",
+      projectId: "islamicsupplications-dc167",
+      storageBucket: "islamicsupplications-dc167.appspot.com",
+      messagingSenderId: "729945511743",
+      appId: "1:729945511743:web:ce98cbfdf3f6f4becd658a",
+      measurementId: "G-6MLJL225LX"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     let currentUser = null;
 
+    // ----------------
+    // التحقق من المستخدم
+    // ----------------
     onAuthStateChanged(auth, (user) => {
       if (user) {
         currentUser = user;
       } else {
-        window.location.href = "login.html";
+        window.location.href = "login.html"; // إعادة توجيه إذا لم يكن مسجلاً
       }
     });
 
+    // ----------------
+    // تحديث الرصيد في Firestore
+    // ----------------
     async function updateBalance(amount) {
       if (!currentUser) return;
       const userRef = doc(db, "users", currentUser.uid);
       const userSnap = await getDoc(userRef);
-      const oldBalance = userSnap.data().balance || 0;
+      const oldBalance = userSnap.exists() && userSnap.data().balance ? userSnap.data().balance : 0;
       const newBalance = oldBalance + amount;
       await updateDoc(userRef, { balance: newBalance });
       alert(translations[currentLang].added + " " + amount + "$ ✅");
     }
 
+    // ----------------
+    // إعداد زر PayPal
+    // ----------------
     function createPayPalButton(amount) {
       paypal.Buttons({
         style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'pay' },
@@ -61,6 +73,9 @@
       }).render('#paypal-button-container');
     }
 
+    // ----------------
+    // بدء الدفع
+    // ----------------
     window.startPayment = function() {
       const amountInput = parseFloat(document.getElementById("amount").value);
       if (isNaN(amountInput) || amountInput <= 0) {
@@ -76,7 +91,7 @@
     }
 
     // ----------------
-    // 🔹 دعم اللغات
+    // دعم اللغات
     // ----------------
     const translations = {
       en: {
@@ -101,7 +116,7 @@
       }
     };
 
-    let currentLang = "en"; // اللغة الأساسية انجليزي
+    let currentLang = "en"; // اللغة الأساسية
 
     window.changeLanguage = function(lang) {
       currentLang = lang;
