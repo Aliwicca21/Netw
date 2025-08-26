@@ -2,12 +2,12 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>الملف الشخصي</title>
+<title>ملف المستخدم</title>
 <link rel="stylesheet" href="alloush.css">
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
@@ -23,35 +23,30 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    const snapshot = await get(ref(db, `users/${user.uid}`));
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      document.getElementById("email").textContent = data.email;
-      document.getElementById("balance").textContent = data.balance + " $";
-      document.getElementById("bot-status").textContent = data.botRunning ? "شغال" : "متوقف";
-      document.getElementById("subscription").textContent = data.subscription + " $";
-    }
-  } else {
-    window.location.href = "login.html";
+let currentUserUid;
+onAuthStateChanged(auth, async user => {
+  if(!user) window.location.href = "login.html";
+  else {
+    currentUserUid = user.uid;
+    const snapshot = await get(ref(db, `users/${currentUserUid}`));
+    const data = snapshot.val();
+    document.getElementById("email").textContent = data.email;
+    document.getElementById("balance").textContent = data.balance;
+    document.getElementById("botStatus").textContent = data.botRunning ? "شغال ✅" : "متوقف ❌";
   }
 });
 
-window.logout = () => {
-  signOut(auth);
-  window.location.href = "login.html";
-};
+window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+window.goToSubscription = () => window.location.href = "subscription.html";
 </script>
 </head>
 <body>
 <div class="card">
-  <h2>الملف الشخصي</h2>
+  <h2>ملف المستخدم</h2>
   <p>البريد: <span id="email"></span></p>
-  <p>الرصيد الحالي: <span id="balance"></span></p>
-  <p>حالة البوت: <span id="bot-status"></span></p>
-  <p>الاشتراك: <span id="subscription"></span></p>
-  <button onclick="window.location.href='subscription.html'">اشترك / شحن رصيد</button>
+  <p>الرصيد الحالي: $<span id="balance"></span></p>
+  <p>حالة البوت: <span id="botStatus"></span></p>
+  <button onclick="goToSubscription()">الاشتراك/شحن الرصيد</button>
   <button onclick="logout()">تسجيل الخروج</button>
 </div>
 </body>
