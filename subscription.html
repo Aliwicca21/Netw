@@ -2,12 +2,12 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>الاشتراك والتفعيل</title>
+<title>الدفع والاشتراك</title>
 <link rel="stylesheet" href="alloush.css">
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
@@ -24,45 +24,33 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 
 let currentUserUid;
-let currentActivationCode;
 
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    currentUserUid = user.uid;
-  } else {
-    window.location.href = "login.html";
-  }
+  if(user) currentUserUid = user.uid;
+  else window.location.href = "login.html";
 });
 
-// شحن الرصيد وإنشاء كود تفعيل تلقائي
+window.paySubscription = async (amount) => {
+  const snapshot = await get(ref(db, `users/${currentUserUid}`));
+  const currentBalance = snapshot.val().balance || 0;
+  if(currentBalance < amount){
+    alert("الرصيد غير كافي، برجاء شحن الرصيد أولاً!");
+    return;
+  }
+  await update(ref(db, `users/${currentUserUid}`), {
+    balance: currentBalance - amount,
+    subscription_active: true,
+    botRunning: true
+  });
+  alert("تم دفع الاشتراك بنجاح! البوت مفعل الآن.");
+  window.location.href = "profile.html";
+};
+
 window.addBalance = async (amount) => {
   const snapshot = await get(ref(db, `users/${currentUserUid}`));
   const currentBalance = snapshot.val().balance || 0;
   await update(ref(db, `users/${currentUserUid}`), { balance: currentBalance + amount });
-
-  // توليد كود عشوائي مكون من 6 أرقام
-  currentActivationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-  // حفظ الكود في Firebase
-  await set(ref(db, `activationCodes/${currentUserUid}`), { code: currentActivationCode, used: false });
-
-  document.getElementById("activationCodeDisplay").textContent = `كود التفعيل الخاص بك: ${currentActivationCode}`;
-  document.getElementById("confirmBtn").style.display = "inline-block";
-};
-
-// تأكيد التفعيل تلقائياً
-window.confirmActivation = async () => {
-  const snapshot = await get(ref(db, `activationCodes/${currentUserUid}`));
-  if (!snapshot.exists()) return alert("لم يتم إنشاء كود بعد! الرجاء شحن الرصيد أولاً");
-
-  const data = snapshot.val();
-  if (data.used) return alert("تم استخدام هذا الكود مسبقاً");
-
-  // تفعيل البوت
-  await update(ref(db, `users/${currentUserUid}`), { botRunning: true });
-  await update(ref(db, `activationCodes/${currentUserUid}`), { used: true });
-
-  alert("✅ تم تفعيل البوت بنجاح!");
+  alert("تم شحن الرصيد!");
 };
 </script>
 </head>
@@ -70,15 +58,15 @@ window.confirmActivation = async () => {
 <div class="card">
   <h2>الاشتراك والدفع</h2>
   <p>اختر الاشتراك أو شحن الرصيد:</p>
-  <button onclick="addBalance(1)">اشتراك 1 دولار (شهر)</button>
-  <button onclick="addBalance(2)">اشتراك 2 دولار (شهرين)</button>
-  <button onclick="addBalance(3)">اشتراك 3 دولار (3 أشهر)</button>
-  <button onclick="addBalance(12)">اشتراك 12 دولار (سنة)</button>
-
-  <p id="activationCodeDisplay" style="margin-top:10px; font-weight:bold;"></p>
-  <button id="confirmBtn" onclick="confirmActivation()" style="display:none; margin-top:10px;">تأكيد التفعيل</button>
-
-  <br><br>
+  <button onclick="paySubscription(1)">اشتراك 1 دولار (شهر)</button>
+  <button onclick="paySubscription(2)">اشتراك 2 دولار (شهرين)</button>
+  <button onclick="paySubscription(3)">اشتراك 3 دولار (3 أشهر)</button>
+  <button onclick="paySubscription(12)">اشتراك 12 دولار (سنة)</button>
+  <hr>
+  <p>شحن الرصيد:</p>
+  <button onclick="addBalance(1)">شحن 1 دولار</button>
+  <button onclick="addBalance(5)">شحن 5 دولار</button>
+  <button onclick="addBalance(10)">شحن 10 دولار</button>
   <button onclick="window.location.href='profile.html'">العودة للملف الشخصي</button>
 </div>
 </body>
