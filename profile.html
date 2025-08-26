@@ -2,12 +2,11 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>ملف المستخدم</title>
-<link rel="stylesheet" href="alloush.css">
+<title>الملف الشخصي</title>
+<link rel="stylesheet" href="style.css">
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
@@ -20,34 +19,57 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getDatabase(app);
+const currentUserId = localStorage.getItem("currentUserId");
 
-let currentUserUid;
-onAuthStateChanged(auth, async user => {
-  if(!user) window.location.href = "login.html";
-  else {
-    currentUserUid = user.uid;
-    const snapshot = await get(ref(db, `users/${currentUserUid}`));
-    const data = snapshot.val();
-    document.getElementById("email").textContent = data.email;
-    document.getElementById("balance").textContent = data.balance;
-    document.getElementById("botStatus").textContent = data.botRunning ? "شغال ✅" : "متوقف ❌";
+async function loadProfile(){
+  if(!currentUserId) window.location.href = "login.html";
+  const snapshot = await get(ref(db, `users/${currentUserId}`));
+  const user = snapshot.val();
+  document.getElementById("balance").innerText = user.balance || 0;
+  document.getElementById("botStatus").innerText = user.botRunning ? "✅ البوت شغال" : "❌ البوت متوقف";
+}
+
+async function renewSubscription(months){
+  const snapshot = await get(ref(db, `users/${currentUserId}`));
+  const user = snapshot.val();
+  const cost = months; // كل شهر = 1 دولار
+  if((user.balance || 0) < cost){
+    alert("الرصيد غير كافي!");
+    return;
   }
-});
+  const newBalance = (user.balance || 0) - cost;
+  await update(ref(db, `users/${currentUserId}`), { 
+    balance: newBalance, 
+    subscription_active: true,
+    botRunning: true
+  });
+  alert("تم تجديد الاشتراك وتفعيل البوت!");
+  loadProfile();
+}
 
-window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-window.goToSubscription = () => window.location.href = "subscription.html";
+window.loadProfile = loadProfile;
+window.renewSubscription = renewSubscription;
+window.logout = () => {
+  localStorage.removeItem("currentUserId");
+  window.location.href = "login.html";
+}
+
+document.addEventListener("DOMContentLoaded", loadProfile);
 </script>
 </head>
 <body>
 <div class="card">
-  <h2>ملف المستخدم</h2>
-  <p>البريد: <span id="email"></span></p>
-  <p>الرصيد الحالي: $<span id="balance"></span></p>
-  <p>حالة البوت: <span id="botStatus"></span></p>
-  <button onclick="goToSubscription()">الاشتراك/شحن الرصيد</button>
+  <h2>الملف الشخصي</h2>
+  <p>الرصيد الحالي: <span id="balance">0</span> دولار</p>
+  <p>حالة البوت: <span id="botStatus">❌</span></p>
+  <h3>تجديد الاشتراك:</h3>
+  <button onclick="renewSubscription(1)">شهر (1$)</button>
+  <button onclick="renewSubscription(2)">شهرين (2$)</button>
+  <button onclick="renewSubscription(3)">3 أشهر (3$)</button>
+  <button onclick="renewSubscription(12)">سنة (12$)</button>
   <button onclick="logout()">تسجيل الخروج</button>
+  <button onclick="window.location.href='topup.html'">شحن الرصيد</button>
 </div>
 </body>
 </html>
