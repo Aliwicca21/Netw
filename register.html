@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>إنشاء حساب</title>
-<link rel="stylesheet" href="alloush.css">
+<link rel="stylesheet" href="style.css">
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 const firebaseConfig = {
@@ -20,39 +19,59 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getDatabase(app);
 
-window.register = async (e) => {
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const email = document.getElementById("email").value.trim();
+  
+  const phone = document.getElementById("phone").value;
+  const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
+  const dob = document.getElementById("dob").value;
+  const gender = document.getElementById("gender").value;
+
+  if(!phone || !email || !password || !dob || !gender){
+    alert("الرجاء ملء جميع الحقول!");
+    return;
+  }
+
+  const userId = phone.replace(/\D/g, "") + Date.now();
+
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const uid = userCredential.user.uid;
-    await set(ref(db, `users/${uid}`), {
-      email: email,
+    await set(ref(db, `users/${userId}`), {
+      phone,
+      email,
+      password,
+      dob,
+      gender,
+      balance: 0,
       subscription_active: false,
-      botRunning: false,
-      balance: 0
+      botRunning: false
     });
     alert("تم إنشاء الحساب بنجاح! برجاء دفع الاشتراك لتفعيل البوت.");
-    window.location.href = "subscription.html";
+    window.location.href = "login.html";
   } catch (err) {
-    alert(err.message);
+    alert("حدث خطأ: " + err.message);
   }
-};
+});
 </script>
 </head>
 <body>
 <div class="card">
   <h2>إنشاء حساب</h2>
-  <form onsubmit="register(event)">
+  <form id="registerForm">
+    <input type="text" id="phone" placeholder="رقم الهاتف" required>
     <input type="email" id="email" placeholder="البريد الإلكتروني" required>
     <input type="password" id="password" placeholder="كلمة المرور" required>
+    <input type="date" id="dob" required>
+    <select id="gender" required>
+      <option value="">اختر الجنس</option>
+      <option value="male">ذكر</option>
+      <option value="female">أنثى</option>
+    </select>
     <button type="submit">إنشاء الحساب</button>
   </form>
-  <p>لديك حساب بالفعل؟ <a href="login.html">تسجيل الدخول</a></p>
+  <p>هل لديك حساب؟ <a href="login.html">تسجيل الدخول</a></p>
 </div>
 </body>
 </html>
