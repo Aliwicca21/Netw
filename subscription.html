@@ -7,7 +7,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getDatabase, ref, get, update, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
@@ -33,11 +33,35 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+// شحن الرصيد
 window.addBalance = async (amount) => {
   const snapshot = await get(ref(db, `users/${currentUserUid}`));
   const currentBalance = snapshot.val().balance || 0;
   await update(ref(db, `users/${currentUserUid}`), { balance: currentBalance + amount });
-  alert("تم شحن الرصيد!");
+
+  // إنشاء كود تفعيل ديناميكي بعد الدفع
+  const activationCode = Math.floor(100000 + Math.random() * 900000).toString(); // كود 6 أرقام
+  await set(ref(db, `activationCodes/${currentUserUid}`), { code: activationCode, used: false });
+  alert(`تم شحن الرصيد! كود التفعيل الخاص بك: ${activationCode}`);
+};
+
+// تفعيل البوت بالكود
+window.activateBot = async () => {
+  const codeInput = document.getElementById("activationCode").value.trim();
+  if (!codeInput) return alert("الرجاء إدخال كود التفعيل");
+
+  const snapshot = await get(ref(db, `activationCodes/${currentUserUid}`));
+  if (!snapshot.exists()) return alert("لم يتم إنشاء كود بعد! الرجاء شحن الرصيد أولاً");
+
+  const data = snapshot.val();
+  if (data.used) return alert("تم استخدام هذا الكود مسبقاً");
+  if (codeInput === data.code) {
+    await update(ref(db, `users/${currentUserUid}`), { botRunning: true });
+    await update(ref(db, `activationCodes/${currentUserUid}`), { used: true });
+    alert("تم تفعيل البوت بنجاح!");
+  } else {
+    alert("كود التفعيل غير صحيح!");
+  }
 };
 </script>
 </head>
@@ -49,6 +73,13 @@ window.addBalance = async (amount) => {
   <button onclick="addBalance(2)">اشتراك 2 دولار (شهرين)</button>
   <button onclick="addBalance(3)">اشتراك 3 دولار (3 أشهر)</button>
   <button onclick="addBalance(12)">اشتراك 12 دولار (سنة)</button>
+
+  <hr>
+  <p>أدخل كود التفعيل لتفعيل البوت:</p>
+  <input type="text" id="activationCode" placeholder="كود التفعيل">
+  <button onclick="activateBot()">تفعيل البوت</button>
+
+  <hr>
   <button onclick="window.location.href='profile.html'">العودة للملف الشخصي</button>
 </div>
 </body>
