@@ -23,8 +23,8 @@ button:hover { background:#0056b3; }
     <h2>تسجيل الدخول</h2>
     <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
     <input type="password" id="loginPassword" placeholder="كلمة المرور">
-    <button onclick="login()">دخول</button>
-    <p>ما عندك حساب؟ <a href="#" onclick="showPage('registerPage')">إنشاء حساب</a></p>
+    <button id="loginBtn">دخول</button>
+    <p>ما عندك حساب؟ <a href="#" id="goRegister">إنشاء حساب</a></p>
   </div>
 </div>
 
@@ -42,12 +42,12 @@ button:hover { background:#0056b3; }
       <option value="male">ذكر</option>
       <option value="female">أنثى</option>
     </select>
-    <button onclick="register()">تسجيل</button>
-    <p>عندك حساب؟ <a href="#" onclick="showPage('loginPage')">تسجيل دخول</a></p>
+    <button id="registerBtn">تسجيل</button>
+    <p>عندك حساب؟ <a href="#" id="goLogin">تسجيل دخول</a></p>
   </div>
 </div>
 
-<!-- الصفحة الرئيسية وعرض البينات -->
+<!-- الصفحة الرئيسية -->
 <div id="homePage" class="page">
   <div class="card">
     <h1>Kalk.Bot</h1>
@@ -60,9 +60,9 @@ button:hover { background:#0056b3; }
     <p><strong>حالة الاشتراك:</strong> <span id="subStatus">❌ غير مفعل</span></p>
 
     <h3>تجديد الاشتراك</h3>
-    <button onclick="renewSub('month')">شهر (1.5$)</button>
-    <button onclick="renewSub('3month')">3 أشهر (4$)</button>
-    <button onclick="renewSub('year')">سنة (12$)</button>
+    <button id="monthBtn">شهر (1.5$)</button>
+    <button id="3monthBtn">3 أشهر (4$)</button>
+    <button id="yearBtn">سنة (12$)</button>
     
     <hr>
     <h3>شحن رصيد عبر PayPal</h3>
@@ -90,103 +90,92 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let currentUserId = null;
 
-// التنقل بين الصفحات
-window.showPage = (id) => {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
+document.addEventListener("DOMContentLoaded", () => {
+  const showPage = (id) => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
 
-// إنشاء حساب
-window.register = async () => {
-  const fullName = document.getElementById("regFullName").value;
-  const phone = document.getElementById("regPhone").value;
-  const email = document.getElementById("regEmail").value;
-  const password = document.getElementById("regPassword").value;
-  const dob = document.getElementById("regDOB").value;
-  const gender = document.getElementById("regGender").value;
+  document.getElementById("goRegister").addEventListener("click", (e) => { e.preventDefault(); showPage("registerPage"); });
+  document.getElementById("goLogin").addEventListener("click", (e) => { e.preventDefault(); showPage("loginPage"); });
 
-  if(!fullName || !phone || !email || !password) { alert("املأ كل الحقول!"); return; }
-
-  const userId = email.replace(/\W/g, "_"); 
-
-  await setDoc(doc(db, "users", userId), {
-    fullName, phone, email, password, dateOfBirth: dob, gender,
-    subscription_active: false,
-    botRunning: false,
-    balance: 0
+  document.getElementById("registerBtn").addEventListener("click", async () => {
+    const fullName = document.getElementById("regFullName").value;
+    const phone = document.getElementById("regPhone").value;
+    const email = document.getElementById("regEmail").value;
+    const password = document.getElementById("regPassword").value;
+    const dob = document.getElementById("regDOB").value;
+    const gender = document.getElementById("regGender").value;
+    if(!fullName || !phone || !email || !password){ alert("املأ كل الحقول!"); return; }
+    const userId = email.replace(/\W/g, "_"); 
+    await setDoc(doc(db, "users", userId), {
+      fullName, phone, email, password, dateOfBirth: dob, gender,
+      subscription_active:false, botRunning:false, balance:0
+    });
+    alert("تم إنشاء الحساب بنجاح ✅");
+    showPage("loginPage");
   });
 
-  alert("تم إنشاء الحساب بنجاح ✅");
-  showPage("loginPage");
-}
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    const userId = email.replace(/\W/g, "_");
+    const docRef = doc(db, "users", userId);
+    const userSnap = await getDoc(docRef);
 
-// تسجيل دخول
-window.login = async () => {
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
+    if(userSnap.exists() && userSnap.data().password === password){
+      currentUserId = userId;
+      const userData = userSnap.data();
+      document.getElementById("username").innerText = userData.fullName;
+      document.getElementById("userEmail").innerText = userData.email;
+      document.getElementById("userPhone").innerText = userData.phone;
+      document.getElementById("userDOB").innerText = userData.dateOfBirth;
+      document.getElementById("userGender").innerText = userData.gender;
+      document.getElementById("balance").innerText = userData.balance;
+      document.getElementById("subStatus").innerText = userData.subscription_active ? "✅ مفعل" : "❌ غير مفعل";
+      document.getElementById("botStatus").innerText = userData.botRunning ? "✅ متصل" : "❌ غير متصل";
+      showPage("homePage");
+    } else { alert("خطأ في البريد أو كلمة المرور ❌"); }
+  });
 
-  const userId = email.replace(/\W/g, "_");
-  const docRef = doc(db, "users", userId);
-  const userSnap = await getDoc(docRef);
-
-  if (userSnap.exists() && userSnap.data().password === password) {
-    currentUserId = userId;
-    const userData = userSnap.data();
-
-    // عرض جميع بيانات العميل
-    document.getElementById("username").innerText = userData.fullName;
-    document.getElementById("userEmail").innerText = userData.email;
-    document.getElementById("userPhone").innerText = userData.phone;
-    document.getElementById("userDOB").innerText = userData.dateOfBirth;
-    document.getElementById("userGender").innerText = userData.gender;
-    document.getElementById("balance").innerText = userData.balance;
-    document.getElementById("subStatus").innerText = userData.subscription_active ? "✅ مفعل" : "❌ غير مفعل";
-
-    showPage("homePage");
-    checkBotStatus(userData.botRunning);
-  } else {
-    alert("خطأ في البريد أو كلمة المرور ❌");
-  }
-}
-
-// تجديد الاشتراك
-window.renewSub = async (plan) => {
-  if (!currentUserId) return;
-  const docRef = doc(db, "users", currentUserId);
-  const userSnap = await getDoc(docRef);
-  let user = userSnap.data();
-  let cost = 1.5;
-  if(plan === "3month") cost = 4;
-  if(plan === "year") cost = 12;
-
-  if(user.balance >= cost){
-    await updateDoc(docRef, {
-      balance: user.balance - cost,
-      subscription_active: true,
-      botRunning: true
-    });
-    document.getElementById("balance").innerText = (user.balance - cost).toFixed(2);
-    document.getElementById("subStatus").innerText = "✅ مفعل";
-    checkBotStatus(true);
-    alert("تم تجديد الاشتراك ✅");
-  } else {
-    alert("الرصيد غير كافي ❌");
-  }
-}
-
-// حالة البوت
-function checkBotStatus(isRunning){
-  document.getElementById("botStatus").innerText = isRunning ? "✅ متصل" : "❌ غير متصل";
-}
-
-// PayPal شحن الرصيد
-paypal.Buttons({
-  createOrder: (data, actions) => actions.order.create({ purchase_units:[{ amount:{value:'5.00'} }] }),
-  onApprove: async (data, actions) => {
-    await actions.order.capture();
+  const renewSub = async (plan) => {
     if(!currentUserId) return;
     const docRef = doc(db, "users", currentUserId);
     const userSnap = await getDoc(docRef);
-    const user = userSnap.data();
-    await updateDoc(docRef, { balance: user.balance + 5, subscription_active:true, botRunning:true });
-    document.getElementById("balance").innerText = (user.balance
+    let user = userSnap.data();
+    let cost = 1.5;
+    if(plan==="3month") cost=4;
+    if(plan==="year") cost=12;
+    if(user.balance >= cost){
+      await updateDoc(docRef, { balance:user.balance-cost, subscription_active:true, botRunning:true });
+      document.getElementById("balance").innerText = (user.balance-cost).toFixed(2);
+      document.getElementById("subStatus").innerText = "✅ مفعل";
+      document.getElementById("botStatus").innerText = "✅ متصل";
+      alert("تم تجديد الاشتراك ✅");
+    } else { alert("الرصيد غير كافي ❌"); }
+  }
+
+  document.getElementById("monthBtn").addEventListener("click", ()=> renewSub("month"));
+  document.getElementById("3monthBtn").addEventListener("click", ()=> renewSub("3month"));
+  document.getElementById("yearBtn").addEventListener("click", ()=> renewSub("year"));
+
+  paypal.Buttons({
+    createOrder: (data, actions) => actions.order.create({ purchase_units:[{ amount:{value:'5.00'} }] }),
+    onApprove: async (data, actions) => {
+      await actions.order.capture();
+      if(!currentUserId) return;
+      const docRef = doc(db, "users", currentUserId);
+      const userSnap = await getDoc(docRef);
+      const user = userSnap.data();
+      await updateDoc(docRef, { balance:user.balance+5, subscription_active:true, botRunning:true });
+      document.getElementById("balance").innerText = (user.balance+5).toFixed(2);
+      document.getElementById("subStatus").innerText = "✅ مفعل";
+      document.getElementById("botStatus").innerText = "✅ متصل";
+      alert("تم الدفع بنجاح ✅ والبوت مفعّل!");
+    }
+  }).render('#paypal-button-container');
+
+});
+</script>
+</body>
+</html>
