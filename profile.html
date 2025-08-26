@@ -1,75 +1,197 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<title>الملف الشخصي</title>
-<link rel="stylesheet" href="style.css">
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
-  authDomain: "fir-dba4c.firebaseapp.com",
-  databaseURL: "https://fir-dba4c-default-rtdb.firebaseio.com",
-  projectId: "fir-dba4c",
-  storageBucket: "fir-dba4c.firebasestorage.app",
-  messagingSenderId: "160255207915",
-  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const currentUserId = localStorage.getItem("currentUserId");
-
-async function loadProfile(){
-  if(!currentUserId) window.location.href = "login.html";
-  const snapshot = await get(ref(db, `users/${currentUserId}`));
-  const user = snapshot.val();
-  document.getElementById("balance").innerText = user.balance || 0;
-  document.getElementById("botStatus").innerText = user.botRunning ? "✅ البوت شغال" : "❌ البوت متوقف";
-}
-
-async function renewSubscription(months){
-  const snapshot = await get(ref(db, `users/${currentUserId}`));
-  const user = snapshot.val();
-  const cost = months; // كل شهر = 1 دولار
-  if((user.balance || 0) < cost){
-    alert("الرصيد غير كافي!");
-    return;
-  }
-  const newBalance = (user.balance || 0) - cost;
-  await update(ref(db, `users/${currentUserId}`), { 
-    balance: newBalance, 
-    subscription_active: true,
-    botRunning: true
-  });
-  alert("تم تجديد الاشتراك وتفعيل البوت!");
-  loadProfile();
-}
-
-window.loadProfile = loadProfile;
-window.renewSubscription = renewSubscription;
-window.logout = () => {
-  localStorage.removeItem("currentUserId");
-  window.location.href = "login.html";
-}
-
-document.addEventListener("DOMContentLoaded", loadProfile);
-</script>
+  <meta charset="UTF-8">
+  <title>اشتراك البوت</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      text-align: center;
+      direction: rtl;
+    }
+    .page { display: none; }
+    .active { display: block; }
+    .card {
+      background: white;
+      margin: 30px auto;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+  </style>
 </head>
 <body>
-<div class="card">
-  <h2>الملف الشخصي</h2>
-  <p>الرصيد الحالي: <span id="balance">0</span> دولار</p>
-  <p>حالة البوت: <span id="botStatus">❌</span></p>
-  <h3>تجديد الاشتراك:</h3>
-  <button onclick="renewSubscription(1)">شهر (1$)</button>
-  <button onclick="renewSubscription(2)">شهرين (2$)</button>
-  <button onclick="renewSubscription(3)">3 أشهر (3$)</button>
-  <button onclick="renewSubscription(12)">سنة (12$)</button>
-  <button onclick="logout()">تسجيل الخروج</button>
-  <button onclick="window.location.href='topup.html'">شحن الرصيد</button>
-</div>
+
+  <!-- صفحة تسجيل الدخول -->
+  <div id="loginPage" class="page active">
+    <div class="card">
+      <h2>تسجيل الدخول</h2>
+      <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
+      <input type="password" id="loginPassword" placeholder="كلمة المرور">
+      <button onclick="login()">دخول</button>
+      <p>ما عندك حساب؟ <a href="#" onclick="showPage('registerPage')">إنشاء حساب</a></p>
+    </div>
+  </div>
+
+  <!-- صفحة إنشاء الحساب -->
+  <div id="registerPage" class="page">
+    <div class="card">
+      <h2>إنشاء حساب</h2>
+      <input type="text" id="regPhone" placeholder="رقم الهاتف">
+      <input type="email" id="regEmail" placeholder="البريد الإلكتروني">
+      <input type="password" id="regPassword" placeholder="كلمة المرور">
+      <input type="date" id="regDOB">
+      <select id="regGender">
+        <option value="male">ذكر</option>
+        <option value="female">أنثى</option>
+      </select>
+      <button onclick="register()">تسجيل</button>
+      <p>عندك حساب؟ <a href="#" onclick="showPage('loginPage')">تسجيل دخول</a></p>
+    </div>
+  </div>
+
+  <!-- الصفحة الرئيسية -->
+  <div id="homePage" class="page">
+    <div class="card">
+      <h2>مرحبا <span id="username"></span></h2>
+      <p>الرصيد الحالي: <span id="balance">0</span> $</p>
+      <button onclick="renewSub('month')">تجديد شهر (1$)</button>
+      <button onclick="renewSub('2month')">تجديد شهرين (2$)</button>
+      <button onclick="renewSub('year')">تجديد سنة (10$)</button>
+      <hr>
+      <h3>شحن رصيد عبر PayPal</h3>
+      <button onclick="chargeBalance()">شحن</button>
+      <hr>
+      <p>حالة البوت: <span id="botStatus">⏳ جاري الفحص...</span></p>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAPKb_xQRp-yQWvz4g_VDnOwgjHLS1Lq3w",
+      authDomain: "boot-d392a.firebaseapp.com",
+      projectId: "boot-d392a",
+      storageBucket: "boot-d392a.firebasestorage.app",
+      messagingSenderId: "535273916804",
+      appId: "1:535273916804:web:bbd346f0d2f94eb3f2b5d1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+
+    // التنقل بين الصفحات
+    window.showPage = (id) => {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // إنشاء حساب
+    window.register = async () => {
+      const phone = document.getElementById("regPhone").value;
+      const email = document.getElementById("regEmail").value;
+      const password = document.getElementById("regPassword").value;
+      const dob = document.getElementById("regDOB").value;
+      const gender = document.getElementById("regGender").value;
+
+      const userId = email.replace(/\W/g, "_"); // تحويل الايميل لـ id
+
+      await setDoc(doc(db, "users", userId), {
+        phone, email, password, dateOfBirth: dob, gender,
+        subscription_active: false,
+        botRunning: false,
+        balance: 0
+      });
+
+      alert("تم إنشاء الحساب بنجاح ✅");
+      showPage("loginPage");
+    }
+
+    // تسجيل دخول
+    window.login = async () => {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      const userId = email.replace(/\W/g, "_");
+      const docRef = doc(db, "users", userId);
+      const userSnap = await getDoc(docRef);
+
+      if (userSnap.exists() && userSnap.data().password === password) {
+        currentUser = userId;
+        document.getElementById("username").innerText = userSnap.data().email;
+        document.getElementById("balance").innerText = userSnap.data().balance;
+        showPage("homePage");
+        checkBotStatus(userSnap.data().botRunning);
+      } else {
+        alert("خطأ في البريد أو كلمة المرور ❌");
+      }
+    }
+
+    // تجديد الاشتراك
+    window.renewSub = async (plan) => {
+      if (!currentUser) return;
+
+      const docRef = doc(db, "users", currentUser);
+      const userSnap = await getDoc(docRef);
+      let user = userSnap.data();
+      let cost = 1;
+      if (plan === "2month") cost = 2;
+      if (plan === "year") cost = 10;
+
+      if (user.balance >= cost) {
+        await updateDoc(docRef, {
+          balance: user.balance - cost,
+          subscription_active: true,
+          botRunning: true
+        });
+        alert("تم تجديد الاشتراك ✅");
+        document.getElementById("balance").innerText = user.balance - cost;
+        checkBotStatus(true);
+      } else {
+        alert("الرصيد غير كافي ❌");
+      }
+    }
+
+    // شحن رصيد (تجريبي بدل PayPal)
+    window.chargeBalance = async () => {
+      if (!currentUser) return;
+      const docRef = doc(db, "users", currentUser);
+      const userSnap = await getDoc(docRef);
+      let user = userSnap.data();
+
+      let amount = 5; // شحن 5 دولار تجريبي
+      await updateDoc(docRef, { balance: user.balance + amount });
+      alert("تم شحن " + amount + "$ لحسابك ✅");
+      document.getElementById("balance").innerText = user.balance + amount;
+    }
+
+    // حالة البوت
+    function checkBotStatus(isRunning) {
+      document.getElementById("botStatus").innerText =
+        isRunning ? "✅ متصل" : "❌ غير متصل";
+    }
+  </script>
+
 </body>
 </html>
