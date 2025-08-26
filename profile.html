@@ -1,220 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Kalk.Bot Profile</title>
-  <link rel="stylesheet" href="eg.css">
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+<meta charset="UTF-8" />
+<title>Kalk.Bot - Profile</title>
+<link rel="stylesheet" href="alloush.css" />
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-    // ==========================
-    // Firebase configuration الجديد
-    // ==========================
-    const firebaseConfig = {
-      apiKey: "AIzaSyDavI-NCLUrH6MvK-cKntmDJ0C90kzS0Pk",
-      authDomain: "my-application-5e7ee.firebaseapp.com",
-      databaseURL: "https://my-application-5e7ee-default-rtdb.firebaseio.com",
-      projectId: "my-application-5e7ee",
-      storageBucket: "my-application-5e7ee.appspot.com",
-      messagingSenderId: "425036201138",
-      appId: "1:425036201138:web:951f8a34125eff4b425dab",
-      measurementId: "G-8QEZ0GZ73D"
-    };
+// ==============================
+// Firebase config
+// ==============================
+const firebaseConfig = {
+  apiKey: "AIzaSyDavI-NCLUrH6MvK-cKntmDJ0C90kzS0Pk",
+  authDomain: "my-application-5e7ee.firebaseapp.com",
+  databaseURL: "https://my-application-5e7ee-default-rtdb.firebaseio.com",
+  projectId: "my-application-5e7ee",
+  storageBucket: "my-application-5e7ee.appspot.com",
+  messagingSenderId: "425036201138",
+  appId: "1:425036201138:web:951f8a34125eff4b425dab",
+  measurementId: "G-8QEZ0GZ73D"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    let currentUser = null;
-    let currentLang = "en";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-    // ==========================
-    // ترجمات
-    // ==========================
-    const translations = {
-      en: {
-        username: "Username",
-        fullname: "Full Name",
-        email: "Email",
-        phone: "Phone",
-        birthdate: "Birth Date",
-        balance: "Balance",
-        subscription: "Subscription",
-        endDate: "End Date",
-        botStatus: "Bot Status",
-        recharge: "Recharge",
-        subSection: "Subscription",
-        account: "Account",
-        active: "✅ Active",
-        inactive: "❌ Inactive",
-        rechargeBtn: "💳 Recharge",
-        sub1: "1 Month (2.50$)",
-        sub3: "3 Months (7.50$)",
-        sub12: "1 Year (30$)",
-        cancel: "Cancel",
-        botData: "Bot Data",
-        edit: "Edit Profile",
-        logout: "Logout",
-        insufficient: "Insufficient balance!"
-      },
-      ar: {
-        username: "اسم المستخدم",
-        fullname: "الاسم الكامل",
-        email: "البريد الإلكتروني",
-        phone: "رقم الهاتف",
-        birthdate: "تاريخ الميلاد",
-        balance: "الرصيد",
-        subscription: "الاشتراك",
-        endDate: "تاريخ الانتهاء",
-        botStatus: "حالة البوت",
-        recharge: "إعادة شحن",
-        subSection: "الاشتراك",
-        account: "الحساب",
-        active: "✅ مفعل",
-        inactive: "❌ غير مفعل",
-        rechargeBtn: "💳 شحن",
-        sub1: "شهر (2.50$)",
-        sub3: "3 أشهر (7.50$)",
-        sub12: "سنة (30$)",
-        cancel: "إلغاء",
-        botData: "بيانات البوت",
-        edit: "تعديل الحساب",
-        logout: "تسجيل الخروج",
-        insufficient: "الرصيد غير كافي!"
-      }
-    };
+let currentUserId = null;
 
-    // ==========================
-    // التحقق من المستخدم
-    // ==========================
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        await loadUserData();
-      } else {
-        window.location.href = "index.html";
-      }
-    });
+// ----------------------------
+// ترجمات
+// ----------------------------
+const translations = {
+  en: {
+    title: "Profile",
+    botStatus: "Bot Status",
+    running: "Running",
+    stopped: "Stopped",
+    balance: "Balance",
+    addBalance: "Add Balance",
+    subscribe: "Subscribe",
+    logout: "Logout",
+    amount: "Amount",
+    months: "Month(s)",
+    pay: "Pay",
+    notLoggedIn: "You must be logged in."
+  },
+  ar: {
+    title: "الملف الشخصي",
+    botStatus: "حالة البوت",
+    running: "شغال",
+    stopped: "متوقف",
+    balance: "الرصيد",
+    addBalance: "شحن الرصيد",
+    subscribe: "الاشتراك",
+    logout: "تسجيل الخروج",
+    amount: "المبلغ",
+    months: "شهر/شهور",
+    pay: "ادفع",
+    notLoggedIn: "يجب تسجيل الدخول أولاً."
+  }
+};
 
-    async function loadUserData() {
-      if (!currentUser) return;
-      const docRef = doc(db, "users", currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const t = translations[currentLang];
+let currentLang = "en";
 
-        document.getElementById("username").textContent = data.username || "N/A";
-        document.getElementById("fullname").textContent = data.fullname || "N/A";
-        document.getElementById("email").textContent = data.email;
-        document.getElementById("phone").textContent = data.phone || "N/A";
-        document.getElementById("birthdate").textContent = data.birthdate || "N/A";
-        document.getElementById("balance").textContent = (data.balance || 0).toFixed(2) + " $";
-        document.getElementById("subscription").textContent = data.subscription || "None";
-        document.getElementById("end-date").textContent = data.endDate || "N/A";
-        document.getElementById("bot-status").textContent = data.botActive ? t.active : t.inactive;
+// تغيير اللغة
+window.changeLanguage = function(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.body.dir = lang === "ar" ? "rtl" : "ltr";
+  const t = translations[lang];
+  document.getElementById("title").textContent = t.title;
+  document.getElementById("bot-status-label").textContent = t.botStatus + ": ";
+  document.getElementById("balance-label").textContent = t.balance + ": ";
+  document.getElementById("logout-btn").textContent = t.logout;
+  document.getElementById("add-balance-btn").textContent = t.addBalance;
+  document.getElementById("subscribe-label").textContent = t.subscribe + ": ";
+};
 
-        document.getElementById("profile-pic").src = data.photoURL || "https://via.placeholder.com/150";
-      }
-    }
+// ----------------------------
+// التحقق من تسجيل الدخول وعرض البيانات
+// ----------------------------
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    alert(translations[currentLang].notLoggedIn);
+    window.location.href = "login.html";
+    return;
+  }
+  currentUserId = user.uid;
+  await loadProfile();
+});
 
-    // ==========================
-    // تغيير اللغة
-    // ==========================
-    window.changeLanguage = function(lang) {
-      currentLang = lang;
-      document.documentElement.lang = lang;
-      const t = translations[lang];
+async function loadProfile() {
+  const userRef = ref(db, `users/${currentUserId}`);
+  const snapshot = await get(userRef);
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    document.getElementById("bot-status").textContent = data.botRunning ? translations[currentLang].running : translations[currentLang].stopped;
+    document.getElementById("balance").textContent = "$" + data.balance.toFixed(2);
+  } else {
+    console.error("User data not found");
+  }
+}
 
-      document.querySelector("[data-username-label]").textContent = t.username;
-      document.querySelector("[data-fullname-label]").textContent = t.fullname;
-      document.querySelector("[data-email-label]").textContent = t.email;
-      document.querySelector("[data-phone-label]").textContent = t.phone;
-      document.querySelector("[data-birthdate-label]").textContent = t.birthdate;
-      document.querySelector("[data-balance-label]").textContent = t.balance;
-      document.querySelector("[data-subscription-label]").textContent = t.subscription;
-      document.querySelector("[data-enddate-label]").textContent = t.endDate;
-      document.querySelector("[data-botstatus-label]").textContent = t.botStatus;
+// ----------------------------
+// شحن الرصيد
+// ----------------------------
+window.addBalance = async () => {
+  const amount = parseFloat(prompt("Enter amount to add:"));
+  if (!isNaN(amount) && amount > 0) {
+    const userRef = ref(db, `users/${currentUserId}`);
+    const snapshot = await get(userRef);
+    let currentBalance = snapshot.val().balance || 0;
+    await update(userRef, { balance: currentBalance + amount });
+    await loadProfile();
+  }
+};
 
-      document.getElementById("recharge-title").textContent = t.recharge;
-      document.getElementById("subscription-title").textContent = t.subSection;
-      document.getElementById("account-title").textContent = t.account;
+// ----------------------------
+// الاشتراك الشهري
+// ----------------------------
+window.subscribe = async () => {
+  const months = parseInt(prompt("Enter months (1,2,3,12):"));
+  if (![1,2,3,12].includes(months)) return;
+  const userRef = ref(db, `users/${currentUserId}`);
+  const snapshot = await get(userRef);
+  let currentBalance = snapshot.val().balance || 0;
+  const costPerMonth = 1;
+  const totalCost = costPerMonth * months;
+  if (currentBalance >= totalCost) {
+    await update(userRef, { balance: currentBalance - totalCost, subscription: months });
+    alert("Subscription successful!");
+    await loadProfile();
+  } else {
+    alert("Not enough balance!");
+  }
+};
 
-      document.getElementById("recharge-btn").textContent = t.rechargeBtn;
-      document.getElementById("sub1-btn").textContent = t.sub1;
-      document.getElementById("sub3-btn").textContent = t.sub3;
-      document.getElementById("sub12-btn").textContent = t.sub12;
-      document.getElementById("cancel-btn").textContent = t.cancel;
-      document.getElementById("bot-btn").textContent = t.botData;
-      document.getElementById("edit-btn").textContent = t.edit;
-      document.getElementById("logout-btn").textContent = t.logout;
-
-      loadUserData();
-    };
-
-    // ==========================
-    // اشتراك من الرصيد
-    // ==========================
-    window.renewSub = async function(months) {
-      if (!currentUser) return;
-      const docRef = doc(db, "users", currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) return alert(translations[currentLang].insufficient);
-
-      const data = docSnap.data();
-      let cost = months === 1 ? 2.5 : months === 3 ? 7.5 : 30;
-      if ((data.balance || 0) < cost) return alert(translations[currentLang].insufficient);
-
-      const newBalance = (data.balance || 0) - cost;
-      await updateDoc(docRef, {
-        balance: newBalance,
-        subscription: months + (currentLang === "ar" ? " شهر" : " Month"),
-        endDate: calculateEndDate(months)
-      });
-      alert(currentLang === "ar" ? "تم تجديد الاشتراك!" : "Subscription renewed!");
-      loadUserData();
-    };
-
-    function calculateEndDate(months) {
-      const now = new Date();
-      now.setMonth(now.getMonth() + months);
-      return now.toLocaleDateString(currentLang === "ar" ? "ar-EG" : "en-US");
-    }
-
-    window.cancelSub = async function() {
-      if (!currentUser) return;
-      const docRef = doc(db, "users", currentUser.uid);
-      await updateDoc(docRef, { subscription: "", endDate: "" });
-      alert(currentLang === "ar" ? "تم إلغاء الاشتراك!" : "Subscription cancelled!");
-      loadUserData();
-    };
-
-    // ==========================
-    // أزرار أساسية
-    // ==========================
-    window.logout = async function() { await signOut(auth); window.location.href = "index.html"; }
-    window.goToBot = function() { window.location.href = "botData.html"; }
-    window.goToEditProfile = function() { window.location.href = "edit-profile.html"; }
-    window.recharge = function() { window.location.href = "recharge.html"; }
-
-  </script>
+// ----------------------------
+// تسجيل الخروج
+// ----------------------------
+window.logout = async () => {
+  await signOut(auth);
+  window.location.href = "login.html";
+};
+</script>
 </head>
 <body>
-  <div class="language-selector">
-    <select onchange="changeLanguage(this.value)">
-      <option value="en" selected>English</option>
-      <option value="ar">العربية</option>
-    </select>
-  </div>
+<div class="language-selector">
+  <select onchange="changeLanguage(this.value)">
+    <option value="en" selected>English</option>
+    <option value="ar">العربية</option>
+  </select>
+</div>
 
-  <div class="card">
-    <img id="profile-pic" class="profile-pic" src="https://via.placeholder.com/150" alt="Profile Picture">
-
-    <div class="data-grid">
-      <div class="data-box"><span class="data-icon">👤</span><div><p data-username-label>Username:</p><p id="username">Loading...</p></div></div>
-      <div class="data-box"><span class="data-icon">📝</span><div><p data-fullname-label>Full Name:</p><p id="fullname">Loading...</p></div></div>
-      <div class="data-box"><span class="data-icon">📧</span><div><p data-email-label>Email:</p><p id="email">Loading...</p></div></div>
-      <div class="data-box"><span class="data-icon">📱</span><div><p data-phone-label>Phone:</p><p id="phone">Loading...</p></div></div>
-      <div class="data-box"><span class="data-icon">🎂</span><div><p data-birthdate-label>Birth Date:</p><p id="birthdate">Loading...</p></div></div>
-      <div class="data-box"><span class="data-icon">💰</span><div><p data-balance-label>Balance:</p><p id="balance">Loading...</
+<div class="card">
+  <h2 id="title">Profile</h2>
+  <p id="bot-status-label">Bot Status: <span id="bot-status">...</span></p>
+  <p id="balance-label">Balance: <span id="balance">...</span></p>
+  <button id="add-balance-btn" onclick="addBalance()">Add Balance</button>
+  <p id="subscribe-label">Subscribe: <button onclick="subscribe()">Pay</button></p>
+  <button id="logout-btn" onclick="logout()">Logout</button>
+</div>
+</body>
+</html>
