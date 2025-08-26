@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>إنشاء حساب</title>
+<link rel="stylesheet" href="alloush.css">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+  authDomain: "fir-dba4c.firebaseapp.com",
+  databaseURL: "https://fir-dba4c-default-rtdb.firebaseio.com",
+  projectId: "fir-dba4c",
+  storageBucket: "fir-dba4c.firebasestorage.app",
+  messagingSenderId: "160255207915",
+  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+window.register = async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await set(ref(db, `users/${userCredential.user.uid}`), {
+      email: email,
+      balance: 0,
+      botRunning: false,
+      subscription: 0
+    });
+    alert("تم إنشاء الحساب بنجاح!");
+    window.location.href = "login.html";
+  } catch (err) {
+    alert(err.message);
+  }
+};
+</script>
+</head>
+<body>
+<div class="card">
+  <h2>إنشاء حساب</h2>
+  <form onsubmit="register(event)">
+    <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+    <input type="password" id="password" placeholder="كلمة المرور" required>
+    <button type="submit">إنشاء الحساب</button>
+  </form>
+  <p>لديك حساب؟ <a href="login.html">تسجيل الدخول</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,103 @@
+/* alloush.css */
+
+/* ================== Reset ================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* ================== Body ================== */
+body {
+  background: #f0f2f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  direction: rtl;
+}
+
+/* ================== Card ================== */
+.card {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  width: 350px;
+  text-align: center;
+}
+
+/* ================== Headings ================== */
+.card h2 {
+  margin-bottom: 25px;
+  color: #333;
+}
+
+/* ================== Inputs ================== */
+.card input[type="email"],
+.card input[type="password"],
+.card input[type="text"] {
+  width: 100%;
+  padding: 12px 15px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* ================== Buttons ================== */
+.card button {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  color: #fff;
+  font-size: 16px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.card button:hover {
+  background: #0056b3;
+}
+
+/* ================== Links ================== */
+.card a {
+  color: #007bff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.card a:hover {
+  text-decoration: underline;
+}
+
+.card p {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+/* ================== Language selector ================== */
+.language-selector {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+}
+
+.language-selector select {
+  padding: 5px 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* ================== Responsive ================== */
+@media (max-width: 400px) {
+  .card {
+    width: 90%;
+    padding: 25px 20px;
+  }
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>الاشتراك والدفع</title>
+<link rel="stylesheet" href="alloush.css">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+  authDomain: "fir-dba4c.firebaseapp.com",
+  databaseURL: "https://fir-dba4c-default-rtdb.firebaseio.com",
+  projectId: "fir-dba4c",
+  storageBucket: "fir-dba4c.firebasestorage.app",
+  messagingSenderId: "160255207915",
+  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let currentUserUid;
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUserUid = user.uid;
+  } else {
+    window.location.href = "login.html";
+  }
+});
+
+window.addBalance = async (amount) => {
+  const snapshot = await get(ref(db, `users/${currentUserUid}`));
+  const currentBalance = snapshot.val().balance || 0;
+  await update(ref(db, `users/${currentUserUid}`), { balance: currentBalance + amount });
+  alert("تم شحن الرصيد!");
+};
+</script>
+</head>
+<body>
+<div class="card">
+  <h2>الاشتراك والدفع</h2>
+  <p>اختر الاشتراك أو شحن الرصيد:</p>
+  <button onclick="addBalance(1)">اشتراك 1 دولار (شهر)</button>
+  <button onclick="addBalance(2)">اشتراك 2 دولار (شهرين)</button>
+  <button onclick="addBalance(3)">اشتراك 3 دولار (3 أشهر)</button>
+  <button onclick="addBalance(12)">اشتراك 12 دولار (سنة)</button>
+  <button onclick="window.location.href='profile.html'">العودة للملف الشخصي</button>
+</div>
+</body>
+</html>

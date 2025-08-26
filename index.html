@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>تسجيل الدخول</title>
+<link rel="stylesheet" href="alloush.css">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+  authDomain: "fir-dba4c.firebaseapp.com",
+  databaseURL: "https://fir-dba4c-default-rtdb.firebaseio.com",
+  projectId: "fir-dba4c",
+  storageBucket: "fir-dba4c.firebasestorage.app",
+  messagingSenderId: "160255207915",
+  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.login = async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "profile.html";
+  } catch (err) {
+    alert(err.message);
+  }
+};
+</script>
+</head>
+<body>
+<div class="card">
+  <h2>تسجيل الدخول</h2>
+  <form onsubmit="login(event)">
+    <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+    <input type="password" id="password" placeholder="كلمة المرور" required>
+    <button type="submit">تسجيل الدخول</button>
+  </form>
+  <p>ليس لديك حساب؟ <a href="register.html">إنشاء حساب</a></p>
+</div>
+</body>
+</html>
