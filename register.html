@@ -25,18 +25,19 @@ const db = getDatabase(app);
 
 window.register = async (e) => {
   e.preventDefault();
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    await set(ref(db, `users/${userCredential.user.uid}`), {
+    const uid = userCredential.user.uid;
+    await set(ref(db, `users/${uid}`), {
       email: email,
-      balance: 0,
+      subscription_active: false,
       botRunning: false,
-      subscription: 0
+      balance: 0
     });
-    alert("تم إنشاء الحساب بنجاح!");
-    window.location.href = "login.html";
+    alert("تم إنشاء الحساب بنجاح! برجاء دفع الاشتراك لتفعيل البوت.");
+    window.location.href = "subscription.html";
   } catch (err) {
     alert(err.message);
   }
@@ -51,7 +52,7 @@ window.register = async (e) => {
     <input type="password" id="password" placeholder="كلمة المرور" required>
     <button type="submit">إنشاء الحساب</button>
   </form>
-  <p>لديك حساب؟ <a href="login.html">تسجيل الدخول</a></p>
+  <p>لديك حساب بالفعل؟ <a href="login.html">تسجيل الدخول</a></p>
 </div>
 </body>
 </html>
