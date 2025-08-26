@@ -2,21 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Register</title>
+<title>Kalk.Bot - Register</title>
 <link rel="stylesheet" href="alloush.css">
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
+// ======== Firebase Config ========
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBGFMZtSytIPzF4XYLyA34DpF5q_k-UPL8",
+  authDomain: "fir-dba4c.firebaseapp.com",
+  databaseURL: "https://fir-dba4c-default-rtdb.firebaseio.com",
+  projectId: "fir-dba4c",
+  storageBucket: "fir-dba4c.appspot.com",
+  messagingSenderId: "160255207915",
+  appId: "1:160255207915:web:ce8e69d43f62daf476d1ae"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -25,20 +26,28 @@ const db = getDatabase(app);
 
 window.register = async (e) => {
   e.preventDefault();
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    alert("Please enter all fields");
+    return;
+  }
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    // إنشاء بيانات المستخدم في قاعدة البيانات
-    await set(ref(db, `users/${userCredential.user.uid}`), {
+    const uid = userCredential.user.uid;
+
+    // إنشاء بيانات المستخدم في Realtime Database
+    await set(ref(db, `users/${uid}`), {
       email: email,
       balance: 0,
       botRunning: false,
       subscription: 0
     });
+
     alert("Account created successfully!");
-    window.location.href = "index.html";
+    window.location.href = "index.html"; // تحويل لصفحة تسجيل الدخول
   } catch (err) {
     alert(err.message);
   }
