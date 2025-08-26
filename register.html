@@ -1,111 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Kalk.Bot - Register</title>
-<link rel="stylesheet" href="alloush.css" />
+<meta charset="UTF-8">
+<title>Register</title>
+<link rel="stylesheet" href="alloush.css">
 <script type="module">
-// استيراد مكتبات Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-// إعدادات Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBdsu6eudfC9zHM7W54Q2WKu92xlWdyPk4",
-  authDomain: "islamicsupplications-dc167.firebaseapp.com",
-  databaseURL: "https://islamicsupplications-dc167-default-rtdb.firebaseio.com",
-  projectId: "islamicsupplications-dc167",
-  storageBucket: "islamicsupplications-dc167.appspot.com",
-  messagingSenderId: "729945511743",
-  appId: "1:729945511743:web:ce98cbfdf3f6f4becd658a",
-  measurementId: "G-6MLJL225LX"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
-// تهيئة Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db = getDatabase(app);
 
-// دالة تطبيع الرقم (إزالة أي رموز)
-const normalizePhone = (v) => v.replace(/[^\d]/g, "");
-
-// تسجيل حساب جديد
 window.register = async (e) => {
   e.preventDefault();
-
-  const username = document.getElementById("username").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const email = document.getElementById("email").value.trim();
+  const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
-  const btn = document.querySelector("button[type='submit']");
-
-  if (!username || !phone || !email || !password) {
-    alert("Please fill all fields.");
-    return;
-  }
-
-  const digits = normalizePhone(phone);
-  if (!digits || digits.length < 10) {
-    alert("Please enter a valid phone number.");
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Registering...";
 
   try {
-    // إنشاء حساب جديد باستخدام الإيميل والباسورد
-    const userCred = await createUserWithEmailAndPassword(auth, email, password);
-
-    // حفظ بيانات المستخدم داخل users
-    await setDoc(doc(db, "users", userCred.user.uid), {
-      username,
-      phone,
-      email,
-      createdAt: new Date().toISOString()
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    // إنشاء بيانات المستخدم في قاعدة البيانات
+    await set(ref(db, `users/${userCredential.user.uid}`), {
+      email: email,
+      balance: 0,
+      botRunning: false,
+      subscription: 0
     });
-
-    // إنشاء فهرس لليوزر نيم
-    await setDoc(doc(db, "user_index", `username:${username.toLowerCase()}`), { email });
-
-    // إنشاء فهرس للرقم
-    await setDoc(doc(db, "user_index", `phone:${digits}`), { email });
-
-    alert("Registered successfully!");
-    window.location.href = "login.html";
+    alert("Account created successfully!");
+    window.location.href = "index.html";
   } catch (err) {
-    switch(err.code) {
-      case "auth/email-already-in-use":
-        alert("This email is already registered.");
-        break;
-      case "auth/invalid-email":
-        alert("Invalid email address.");
-        break;
-      case "auth/weak-password":
-        alert("Password should be at least 6 characters.");
-        break;
-      default:
-        alert("Error: " + err.message);
-    }
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Register";
+    alert(err.message);
   }
 };
 </script>
 </head>
 <body>
-  <div class="card">
-    <h2>Register</h2>
-    <form onsubmit="register(event)">
-      <input type="text" id="username" placeholder="Username" required />
-      <input type="text" id="phone" placeholder="Phone" required />
-      <input type="email" id="email" placeholder="Email" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="login.html">Login</a></p>
-  </div>
+<div class="card">
+  <h2>Register</h2>
+  <form onsubmit="register(event)">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Register</button>
+  </form>
+  <p>Already have an account? <a href="index.html">Login</a></p>
+</div>
 </body>
 </html>
